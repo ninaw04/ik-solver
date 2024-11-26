@@ -1,0 +1,47 @@
+# macOS specific files
+.DS_Store
+
+# Xcode specific files
+build/
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+
+# openFrameworks specific files
+libs/openFrameworksCompiled/lib/osx/*
+libs/openFrameworksCompiled/project/makefileCommon/compile.project.mk
+
+# Temporary files
+*.tmp
+*.log
+
+# Compiled object files
+*.o
+*.obj
+*.lo
+*.d
+
+# Compiled dynamic libraries
+*.dll
+*.dylib
+*.so
+
+# Compiled static libraries
+*.lib
+*.a
+
+# Compiled executables
+*.exe
+*.out
+*.app
+
+# Backup files
+*.bak
+*.swp
+*~
+
+# Other
+bin/data/
