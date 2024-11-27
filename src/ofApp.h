@@ -11,10 +11,14 @@
 //
 
 #include "ofMain.h"
+#include "ofxButton.h"
 #include "ofxGui.h"
 #include "box.h"
 #include "Primitives.h"
 #include "joint.hpp"
+#include "ofxGuiUtils.h"
+#include "ofxInputField.h"
+#include "ofxSlider.h"
 
 
 
@@ -76,6 +80,18 @@ class ofApp : public ofBaseApp{
     
         // GUI
         ofxPanel gui;
+        ofxLabel jointName;
+        ofxLabel jointX;
+        ofxLabel jointY;
+        ofxLabel jointZ;
+
+        ofxFloatSlider minAngle;
+        ofxFloatSlider maxAngle;
+        ofxToggle xAxis;
+        ofxToggle yAxis;
+        ofxToggle zAxis;
+        
+
 //        ofxButton loadSkeleton;
 //        ofxTextField skeletonPath;
 //

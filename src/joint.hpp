@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "Primitives.h"
 
+
 class Joint : public Sphere {
 private:
     static int jointInstances;
@@ -22,6 +23,13 @@ public:
     
     void draw() override;
     // delete function
+    // add a range for x, y, z constraints per joint
+    std::pair<int, int> range = {-360, 360};
+
+
+    bool xConstraint = false;
+    bool yConstraint = false;
+    bool zConstraint = false;
     
     float radius = 0.2;
 };
