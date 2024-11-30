@@ -64,9 +64,9 @@ void ofApp::setup() {
 
   // Simple 2 R joint arm solution
   // joints
-  Joint *j1 = new Joint(glm::vec3(0, 0, 0), "j1");
-  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
-  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
+//  Joint *j1 = new Joint(glm::vec3(0, 0, 0), "j1");
+//  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
+//  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
 
   j1->addChild(j2);
   j2->addChild(j3);
@@ -83,11 +83,13 @@ void ofApp::update() {}
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-
   theCam->begin();
+    ofDrawGrid(1);
   ofNoFill();
   drawAxis();
   ofEnableLighting();
+    
+    ofDrawSphere(WORLDPOINT, 0.2);
 
   //  draw the objects in scene
   //
@@ -531,6 +533,10 @@ void ofApp::mousePressed(int x, int y, int button) {
 
   // check for selection of scene objects
   //
+//    glm::vec3 worldPoint = theCam->screenToWorld(glm::vec3(x, y, 0));
+    glm::vec3 worldPoint;
+    mouseToDragPlane(x, y, worldPoint);
+    bool itemIntersected = false;
   for (int i = 0; i < scene.size(); i++) {
 
     glm::vec3 point, norm;
@@ -540,8 +546,15 @@ void ofApp::mousePressed(int x, int y, int button) {
     if (scene[i]->isSelectable &&
         scene[i]->intersect(Ray(p, dn), point, norm)) {
       hits.push_back(scene[i]);
+      itemIntersected = true;
     }
   }
+
+    if (!itemIntersected) {
+//        cout << "mouse point: " << worldPoint << endl;
+        WORLDPOINT = worldPoint;
+        inverseKin3(worldPoint, *j1, *j2, *j3);
+    }
 
   // if we selected more than one, pick nearest
   //
@@ -592,3 +605,59 @@ void ofApp::gotMessage(ofMessage msg) {}
 
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo) {}
+
+
+// sets the specified 3dof arm to reach target point
+void ofApp::inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3) {
+    double reach = glm::distance(joint1.getPosition(), joint2.getPosition()) + glm::distance(joint2.getPosition(), joint3.getPosition());
+    
+    double c = glm::sqrt(glm::pow(target.x, 2) + glm::pow(target.z, 2)); // distance, radius of circle slice
+//    double joint1Angle = glm::atan(target.z - joint1.rotation.z, target.x - joint1.rotation.x) * 180 / pi;
+    
+    
+    double joint1Angle = glm::atan(target.z, target.x) * 180 / pi;
+    joint1.rotation = glm::vec3(joint1.rotation.x, -joint1Angle, joint1.rotation.z);
+    
+    
+    cout << "rotunda: " << joint1Angle << endl;
+    
+    double a = glm::distance(joint1.getPosition(), joint2.getPosition());
+    double b = glm::distance(joint2.getPosition(), joint3.getPosition());
+    
+    if (a == 0 || b == 0) {
+        cout << "joint distance is wack" << endl;
+        return;
+    }
+    
+    // angle of joint 2
+    // (a**2 + b**2 - c**2) / (2*a*b)
+    double cosAngle2 = (std::pow(a, 2) + std::pow(b, 2) - std::pow(c, 3)) / (2 * a * b);
+    double joint2Angle = std::acos(clamp(cosAngle2, -1.0, 1.0));
+    
+    // angle of base to end effector
+    // (a**2 + c**2 - b**2) / (2*a*c)
+    double cosAngle1 = (std::pow(a, 2) + std::pow(c, 2) - std::pow(b, 2)) / (2 * a * c);
+    double joint3Angle = std::acos(clamp(cosAngle1, -1.0, 1.0));
+    
+    cout << "target: " << target << endl;
+    
+    cout << "joint 1 pos: " << joint1.getPosition() << endl;
+    cout << "joint 1 ang: " << joint1.rotation << endl;
+    
+    cout << "joint 2: " << joint2.getPosition() << endl;
+    cout << "joint 3: " << joint3.getPosition() << endl;
+    
+    // change rotation to corresponding axis???
+    // JOINT.plane stores the rotation plane, so make a switch case thingy based on that
+//    auto angleZ = glm::angle(glm::vec3(0, 0, target.z), glm::vec3(0, 0, joint1.getPosition().z));
+
+//    joint1.rotation = glm::vec3(joint1.rotation.x, joint1Angle, joint1.rotation.z);
+    
+
+//    joint2.rotation = glm::vec3(0, 0, 90);
+//    joint3.rotation = glm::vec3(0, , 0);
+    
+//    ofDrawTriangle(joint1.getPosition(), <#const glm::vec3 &p2#>, <#const glm::vec3 &p3#>);
+    
+//    return glm::vec3(joint1Angle, joint2Angle, joint3Angle);
+}

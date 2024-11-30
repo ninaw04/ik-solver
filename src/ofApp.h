@@ -46,6 +46,8 @@ class ofApp : public ofBaseApp{
         bool objSelected() { return (selected.size() ? true : false ); };
         void saveToFile();
         void readSkeleton(ofFile skeleton);
+    
+        void inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3);
         
         // Lights
         //
@@ -91,6 +93,13 @@ class ofApp : public ofBaseApp{
         ofxToggle yAxis;
         ofxToggle zAxis;
         
+        // ARM
+        Joint *j1 = new Joint(glm::vec3(0, 0, 0), "j1");
+        Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
+        Joint *j3 = new Joint(glm::vec3(2, 2, 0), "j3");
+    
+        // RAHHHH
+        glm::vec3 WORLDPOINT = glm::vec3(0,0,0);
 
 //        ofxButton loadSkeleton;
 //        ofxTextField skeletonPath;

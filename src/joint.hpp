@@ -26,7 +26,9 @@ public:
     // add a range for x, y, z constraints per joint
     std::pair<int, int> range = {-360, 360};
 
-
+    // x, y, z plane
+    char plane = 'y';
+    
     bool xConstraint = false;
     bool yConstraint = false;
     bool zConstraint = false;
