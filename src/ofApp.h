@@ -47,7 +47,8 @@ class ofApp : public ofBaseApp{
         void saveToFile();
         void readSkeleton(ofFile skeleton);
     
-        void inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3);
+        void inverseKin2(glm::vec2 target, Joint& joint1, Joint& joint2, vector<pair<glm::vec2, glm::vec2>>& solutions);
+        void inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3, vector<pair<glm::vec3, glm::vec3>>& solutions);
         
         // Lights
         //

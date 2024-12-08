@@ -12,6 +12,8 @@
 
 #include "ofApp.h"
 
+#define PI 3.14
+
 //--------------------------------------------------------------
 //
 void ofApp::setup() {
@@ -608,56 +610,101 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {}
 
 
 // sets the specified 3dof arm to reach target point
-void ofApp::inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3) {
+void ofApp::inverseKin2(glm::vec2 target, Joint& joint1, Joint& joint2, vector<pair<glm::vec2, glm::vec2>>& solutions) {
     double reach = glm::distance(joint1.getPosition(), joint2.getPosition()) + glm::distance(joint2.getPosition(), joint3.getPosition());
     
-    double c = glm::sqrt(glm::pow(target.x, 2) + glm::pow(target.z, 2)); // distance, radius of circle slice
-//    double joint1Angle = glm::atan(target.z - joint1.rotation.z, target.x - joint1.rotation.x) * 180 / pi;
+        
+    // 2RIK
+    // magnitude of target squared - bone1 squared - bone2 squared
+    // all divided by 2*bone1*bone2
+    // is equal to c2
     
+    // RETURN VALUE IS CHANGING JOINT 1 AND 2 ROTATION
     
-    double joint1Angle = glm::atan(target.z, target.x) * 180 / pi;
-    joint1.rotation = glm::vec3(joint1.rotation.x, -joint1Angle, joint1.rotation.z);
+    double targetLen = glm::length(target);
+//    glm::vec2 flattenedTarget = glm::vec2(target.x, target.y);
+//    double targetLen = glm::length(flattenedTarget);
     
+    double bone1 = glm::distance(joint1.getPosition(), joint2.getPosition());
+    double bone2 = glm::distance(joint2.getPosition(), joint3.getPosition());
+    double numerator = glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
+    double denominator = 2 * bone1 * bone2;
+    double c2 = 0;  // idk is this best practice
     
-    cout << "rotunda: " << joint1Angle << endl;
+    glm::vec2 rot1, rot2;
     
-    double a = glm::distance(joint1.getPosition(), joint2.getPosition());
-    double b = glm::distance(joint2.getPosition(), joint3.getPosition());
-    
-    if (a == 0 || b == 0) {
-        cout << "joint distance is wack" << endl;
+    if (denominator == 0) {
+        printf("pattern says this is inappropriate\n");
         return;
+    } else {
+        c2 = numerator/denominator;
     }
     
-    // angle of joint 2
-    // (a**2 + b**2 - c**2) / (2*a*b)
-    double cosAngle2 = (std::pow(a, 2) + std::pow(b, 2) - std::pow(c, 3)) / (2 * a * b);
-    double joint2Angle = std::acos(clamp(cosAngle2, -1.0, 1.0));
+    if (glm::abs(c2) > 1) {
+        printf("no bueno target location\n");
+        return;
+    } else if (c2 == 1) {
+        // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
+        rot1 = glm::degrees(glm::vec2(0, atan2(target.x, target.y)));
+        rot2 = glm::vec2(0, 0);
+        solutions.push_back(pair(rot1, rot2));
+    } else if (c2 == -1 and target != glm::vec2(0,0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
+        rot1 = glm::degrees(glm::vec2(0, atan2(target.x, target.y)));
+        rot2 = glm::degrees(glm::vec2(0, PI));
+        solutions.push_back(pair(rot1, rot2));
+    } else if (c2 == -1 and target == glm::vec2(0,0)) { // if  𝑐2=−1 and  𝐱𝐷=0 then return  {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
+        // as long as q2 is pi, q1 can be anything, we are returning the original joint rotation
+        rot1 = joint1.rotation;                       // (q1)
+        rot2 = glm::degrees(glm::vec2(0, PI));     // pi
+        solutions.push_back(pair(rot1, rot2));
+    } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
+        double theta = atan2(target.x, target.y);
+        for (int k = 1; k <= 2; k++) { //𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
+            // positive and negative q2
+            rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2))) : glm::degrees(glm::vec2(0, -glm::acos(c2)));
+            // finding q1
+            double joint1RotationZ = theta - atan2(bone2 * sin(rot2.y), bone1 + bone2 * cos(rot2.y));
+            rot1 = glm::degrees(glm::vec2(0, joint1RotationZ));
+            solutions.push_back(pair(rot1, rot2));
+        }
+    }
     
-    // angle of base to end effector
-    // (a**2 + c**2 - b**2) / (2*a*c)
-    double cosAngle1 = (std::pow(a, 2) + std::pow(c, 2) - std::pow(b, 2)) / (2 * a * c);
-    double joint3Angle = std::acos(clamp(cosAngle1, -1.0, 1.0));
+    
+//    for (pair sol : solutions) {
+//        // process which one falls within the constraints
+//    }
+    // for now lets just return the first solution in solutions
+//    joint1.rotation = solutions[0].first;
+//    joint1.rotation = glm::vec2(0, 0, 90);
+//    joint2.rotation = solutions[0].second;
     
     cout << "target: " << target << endl;
     
-    cout << "joint 1 pos: " << joint1.getPosition() << endl;
-    cout << "joint 1 ang: " << joint1.rotation << endl;
+//    cout << "joint 1 pos: " << joint1.getPosition() << endl;
+//    cout << "joint 1 ang: " << joint1.rotation << endl;
+//    
+//    cout << "joint 2: " << joint2.getPosition() << endl;
+//    cout << "joint 3: " << joint3.getPosition() << endl;
     
-    cout << "joint 2: " << joint2.getPosition() << endl;
-    cout << "joint 3: " << joint3.getPosition() << endl;
+    cout << "target length: " << targetLen << endl;
+    
+//    sqrt(pow(bone1, 2) + pow(bone2, 2))
+    // law of cosines, the distance from end effector to rotunda
+    double gamma = rot2.y;
+    double endEfDist = sqrt(pow(bone1,2) + pow(bone2,2) - (2 * bone1 * bone2 * cos(gamma)));
+    cout << "bone distance: " << endEfDist << endl;
     
     // change rotation to corresponding axis???
     // JOINT.plane stores the rotation plane, so make a switch case thingy based on that
-//    auto angleZ = glm::angle(glm::vec3(0, 0, target.z), glm::vec3(0, 0, joint1.getPosition().z));
 
-//    joint1.rotation = glm::vec3(joint1.rotation.x, joint1Angle, joint1.rotation.z);
+//
     
+}
 
-//    joint2.rotation = glm::vec3(0, 0, 90);
-//    joint3.rotation = glm::vec3(0, , 0);
+void ofApp::inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3, vector<pair<glm::vec3, glm::vec3>>& solutions) {
+    glm::vec2 targetVec2 = glm::vec2(sqrt(pow(target.x,2) + pow(target.z, 2)), -target.y + 0); // l1 is offset from rotunda to shoulder
+    double joint1Angle = glm::atan(target.z, target.x) * 180 / PI;
     
-//    ofDrawTriangle(joint1.getPosition(), <#const glm::vec3 &p2#>, <#const glm::vec3 &p3#>);
-    
-//    return glm::vec3(joint1Angle, joint2Angle, joint3Angle);
+    // part of solutions
+//    joint1.rotation = glm::vec3(joint1.rotation.x, -joint1Angle, joint1.rotation.z); // change z to rotate
 }
