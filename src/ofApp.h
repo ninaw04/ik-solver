@@ -46,10 +46,15 @@ class ofApp : public ofBaseApp{
         bool objSelected() { return (selected.size() ? true : false ); };
         void saveToFile();
         void readSkeleton(ofFile skeleton);
+        struct jointDegrees3R {
+            glm::vec3 rotunda;
+            glm::vec3 shoulder;
+            glm::vec3 elbow;
+        };
     
-        void inverseKin2(glm::vec2 target, Joint& joint1, Joint& joint2, vector<pair<glm::vec2, glm::vec2>>& solutions);
-        void inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3, vector<pair<glm::vec3, glm::vec3>>& solutions);
-        
+        void inverseKin2(glm::vec2 target, Joint& joint1, Joint& joint2, Joint& joint3, vector<pair<glm::vec2, glm::vec2>>& solutions);
+        void inverseKin3(glm::vec3 target, Joint& joint1, Joint& joint2, Joint& joint3, vector<jointDegrees3R> &solutions);
+        void handleSolutions(vector<jointDegrees3R> &solutions);
         // Lights
         //
         ofLight light1;
@@ -100,7 +105,9 @@ class ofApp : public ofBaseApp{
         Joint *j3 = new Joint(glm::vec3(2, 2, 0), "j3");
     
         // RAHHHH
-        glm::vec3 WORLDPOINT = glm::vec3(0,0,0);
+        glm::vec3 WORLDPOINT = glm::vec3(0, 0, 0);
+
+        
 
 //        ofxButton loadSkeleton;
 //        ofxTextField skeletonPath;
