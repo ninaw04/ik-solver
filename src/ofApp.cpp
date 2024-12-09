@@ -11,6 +11,9 @@
 //
 
 #include "ofApp.h"
+#include "ofColor.h"
+#include "ofGraphics.h"
+
 
 #define PI 3.14
 
@@ -107,6 +110,15 @@ void ofApp::draw() {
 
   material.end();
   ofDisableLighting();
+  // int i = 0;
+  // for (auto sol : solutions) {
+  //   ofSetColor(ofColor(20*i,20*i,20*i));
+  //   ofSetLineWidth(10);
+  //   ofDrawLine(sol.elbow, sol.rotunda);
+  //   ofDrawLine(sol.elbow, sol.shoulder);
+  //   i += 1;
+  //   // cout << "elbow: " << /s<< endl;
+  // }
   theCam->end();
 
   ofDisableDepthTest();
@@ -131,6 +143,7 @@ void ofApp::draw() {
     jointZ = "Rotation Z: 0";
   }
   gui.draw();
+  
 
   ofEnableDepthTest();
 }
@@ -559,7 +572,7 @@ void ofApp::mousePressed(int x, int y, int button) {
   if (!itemIntersected) {
     //        cout << "mouse point: " << worldPoint << endl;
     WORLDPOINT = worldPoint;
-    vector<jointDegrees3R> solutions;
+    solutions.clear();
     inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
     handleSolutions(solutions);
   }
@@ -751,10 +764,11 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
 
   // }
   if (solutions.size() >= 1) {
-    j1->rotation = -solutions[0].rotunda - solutions[0].shoulder;
-    j2->rotation = -solutions[0].elbow;
+    j1->rotation = -solutions[0].rotunda + solutions[0].shoulder;
+    j2->rotation = +solutions[0].elbow;
     // j1->rotation = -solutions[0].rotunda;
   }
+
 
  
 }
