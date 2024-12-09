@@ -17,9 +17,9 @@ private:
     static int jointInstances;
     
 public:
-    Joint(glm::vec3 p, string n) { position = p; name = n; }
-    Joint(glm::vec3 p) { position = p; name = "joint" + to_string(jointInstances++); }
-    Joint() {}
+    Joint(glm::vec3 p, string n) { this->setPosition(p); name = n; }
+    Joint(glm::vec3 p) { this->setPosition(p); name = "joint" + to_string(jointInstances++); }
+    Joint() { position = glm::vec3(0,0,0); name = "joint" + to_string(jointInstances++); }
     
     void draw() override;
     // delete function

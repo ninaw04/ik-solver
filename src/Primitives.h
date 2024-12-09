@@ -63,20 +63,31 @@ public:
 	
 
 	    return (trans * post * rotate * pre * scale);
+  }
+  glm::vec3 getTotalRotation() {
+    if (parent) {
+      auto parentRotation = parent->getTotalRotation();
+      return (parentRotation + rotation);
+    } else {
+      return (rotation);
+    }
+  }
 
-	}
 
 	glm::mat4 getMatrix() {
 
-		// if we have a parent (we are not the root),
-		// concatenate parent's transform (this is recursive)
-		// 
-		// if (parent) {
-		// 	glm::mat4 M = parent->getMatrix();
-		// 	return (M * getLocalMatrix());
-		// }
-		// else return getLocalMatrix();  // priority order is SRT
-		return getLocalMatrix();
+          // if we have a parent (we are not the root),
+          // concatenate parent's transform (this is recursive)
+          //
+		if (parent) {
+			glm::mat4 M = parent->getMatrix();
+			return (M * getLocalMatrix());
+                }
+  
+		else return getLocalMatrix();  // priority order is SRT
+		
+
+		// return getLocalMatrix();
 	}
 
 	// get current Position in World Space

@@ -11,6 +11,7 @@
 //
 
 #include "ofApp.h"
+#include "fwd.hpp"
 #include "ofColor.h"
 #include "ofGraphics.h"
 
@@ -69,16 +70,24 @@ void ofApp::setup() {
 
   // Simple 2 R joint arm solution
   // joints
-  //  Joint *j1 = new Joint(glm::vec3(0, 0, 0), "j1");
+  j1->addChild(j2);
+  j2->addChild(j3);
+
+  j1->setPosition(glm::vec3(0,0,0));
+  j2->setPosition(glm::vec3(0.1,2,0));
+  j3->setPosition(glm::vec3(2,2,0));
   //  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
   //  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
 
-  j1->addChild(j2);
-  j2->addChild(j3);
+  
+
+  // j3->addChild(j4);
 
   scene.push_back(j1);
   scene.push_back(j2);
   scene.push_back(j3);
+
+  // scene.push_back(j4);
 
   // expand this to
 }
@@ -650,6 +659,8 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
   double c2 = 0; // idk is this best practice
 
   glm::vec2 rot1, rot2;
+  // glm::vec3 j1TotalRot = joint1.getTotalRotation();
+  // glm::vec3 j2TotalRot = joint2.getTotalRotation();
 
   if (denominator == 0) {
     printf("pattern says this is inappropriate\n");
@@ -665,7 +676,6 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
     // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
     rot1 = glm::degrees(glm::vec2(0, atan2(target.x, target.y)));
     rot2 = glm::vec2(0, 0);
-    solutions.push_back(pair(rot1, rot2));
   } else if (c2 == -1 and
              target !=
                  glm::vec2(
@@ -673,7 +683,6 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
                      0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
     rot1 = glm::degrees(glm::vec2(0, atan2(target.x, target.y)));
     rot2 = glm::degrees(glm::vec2(0, PI));
-    solutions.push_back(pair(rot1, rot2));
   } else if (c2 == -1 and
              target ==
                  glm::vec2(
@@ -683,7 +692,6 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
     // joint rotation
     rot1 = joint1.rotation;                // (q1)
     rot2 = glm::degrees(glm::vec2(0, PI)); // pi
-    solutions.push_back(pair(rot1, rot2));
   } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
     double theta = atan2(target.x, target.y);
     for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
@@ -694,18 +702,22 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
       double joint1RotationZ =
           theta - atan2(bone2 * sin(rot2.y), bone1 + bone2 * cos(rot2.y));
       rot1 = glm::degrees(glm::vec2(0, joint1RotationZ));
+      cout << "rot1 joint1: " << rot1 << endl;
+      cout << "rot2 joint2: " << rot2 << endl;
       solutions.push_back(pair(rot1, rot2));
     }
   }
 
-  cout << "target: " << target << endl;
-  cout << "target length: " << targetLen << endl;
+  solutions.push_back(pair(rot1, rot2));
+
+  // cout << "target: " << target << endl;
+  // cout << "target length: " << targetLen << endl;
 
   // law of cosines, the distance from end effector to rotunda
   double gamma = rot2.y;
   double endEfDist =
       sqrt(pow(bone1, 2) + pow(bone2, 2) - (2 * bone1 * bone2 * cos(gamma)));
-  cout << "bone distance: " << endEfDist << endl;
+  // cout << "bone distance: " << endEfDist << endl;
 
   // change rotation to corresponding axis???
   // JOINT.plane stores the rotation plane, so make a switch case thingy based
@@ -741,8 +753,10 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
         glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
     config.elbow =
         glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
+    
 
     // check if valid within constraints
+    // config.elbow -= joint2.getTotalRotation();
     solutions.push_back(config);
   }
 
@@ -752,6 +766,8 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
 }
 
 void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
+  // we need the absolute value of the solution in solutions to compare against the constraints
+
   //    for (pair sol : solutions) {
   //        // process which one falls within the constraints
   //
@@ -763,12 +779,20 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
   //   //     sol.first.y >= j1.)
 
   // }
-  if (solutions.size() >= 1) {
-    j1->rotation = -solutions[0].rotunda + solutions[0].shoulder;
-    j2->rotation = +solutions[0].elbow;
+
+  // then we subtract the parent rotation to get the joint's relative rotation here
+  for (auto sol: solutions) {
+    // pls work pls work
+    // j2->rotation -= j2->getTotalRotation(); // can get parent if you want to be safe? and not include current rotations
+
+    j1->rotation = -sol.rotunda + sol.shoulder;
+    j2->rotation = +sol.elbow;
+
+    // cout << "rotunda: " << sol.rotunda << endl;
+    // cout << "shoulder: " << sol.shoulder << endl;
+    // cout << "elbow: " << sol.elbow << endl;
     // j1->rotation = -solutions[0].rotunda;
   }
-
-
+  cout << "end of solutions" << endl;
  
 }

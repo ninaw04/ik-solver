@@ -100,9 +100,11 @@ class ofApp : public ofBaseApp{
         ofxToggle zAxis;
         
         // ARM
-        Joint *j1 = new Joint(glm::vec3(0, 0, 0), "j1");
-        Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
-        Joint *j3 = new Joint(glm::vec3(2, 2, 0), "j3");
+        Joint *j1 = new Joint();
+        Joint *j2 = new Joint();
+        Joint *j3 = new Joint();
+        // Joint *j4 = new Joint(glm::vec3(1, 1, 0), "j4");
+        // j3->setPosition(glm::vec3(0,2,0));
 
         vector<jointDegrees3R> solutions;
     
