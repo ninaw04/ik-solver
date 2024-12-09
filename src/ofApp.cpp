@@ -11,7 +11,7 @@
 //
 
 #include "ofApp.h"
-#include "fwd.hpp"
+//#include "fwd.hpp"
 #include "ofColor.h"
 #include "ofGraphics.h"
 
@@ -74,8 +74,8 @@ void ofApp::setup() {
   j2->addChild(j3);
 
   j1->setPosition(glm::vec3(0,0,0));
-  j2->setPosition(glm::vec3(0.1,2,0));
-  j3->setPosition(glm::vec3(2,2,0));
+  j2->setPosition(glm::vec3(2,0,0));
+  j3->setPosition(glm::vec3(4,0,0));
   //  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
   //  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
 
@@ -674,15 +674,17 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
     return;
   } else if (c2 == 1) {
     // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
-    rot1 = glm::degrees(glm::vec2(0, atan2(target.x, target.y)));
+    rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
     rot2 = glm::vec2(0, 0);
+    solutions.push_back(pair(rot1, rot2));
   } else if (c2 == -1 and
              target !=
                  glm::vec2(
                      0,
                      0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
-    rot1 = glm::degrees(glm::vec2(0, atan2(target.x, target.y)));
+    rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
     rot2 = glm::degrees(glm::vec2(0, PI));
+    solutions.push_back(pair(rot1, rot2));
   } else if (c2 == -1 and
              target ==
                  glm::vec2(
@@ -692,15 +694,19 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
     // joint rotation
     rot1 = joint1.rotation;                // (q1)
     rot2 = glm::degrees(glm::vec2(0, PI)); // pi
+    solutions.push_back(pair(rot1, rot2));
   } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
-    double theta = atan2(target.x, target.y);
+    double theta = atan2(target.y, target.x);
     for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
       // positive and negative q2
-      rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2)))
+      rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2))) // might be complement
                       : glm::degrees(glm::vec2(0, -glm::acos(c2)));
       // finding q1
+        double sinRot2 = sin(rot2.y);
       double joint1RotationZ =
-          theta - atan2(bone2 * sin(rot2.y), bone1 + bone2 * cos(rot2.y));
+          theta - atan2(bone2 * sin(rot2.y), bone1 + (bone2 * cos(rot2.y)));
+//        double joint1RotationZ =
+//            atan2(bone2 * sin(rot2.y), bone1 + (bone2 * cos(rot2.y)));
       rot1 = glm::degrees(glm::vec2(0, joint1RotationZ));
       cout << "rot1 joint1: " << rot1 << endl;
       cout << "rot2 joint2: " << rot2 << endl;
@@ -708,7 +714,7 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
     }
   }
 
-  solutions.push_back(pair(rot1, rot2));
+//  solutions.push_back(pair(rot1, rot2)); //TODOOOOOO ADD THESE BACK IN
 
   // cout << "target: " << target << endl;
   // cout << "target length: " << targetLen << endl;
@@ -781,18 +787,21 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
   // }
 
   // then we subtract the parent rotation to get the joint's relative rotation here
-  for (auto sol: solutions) {
-    // pls work pls work
-    // j2->rotation -= j2->getTotalRotation(); // can get parent if you want to be safe? and not include current rotations
-
-    j1->rotation = -sol.rotunda + sol.shoulder;
-    j2->rotation = +sol.elbow;
-
-    // cout << "rotunda: " << sol.rotunda << endl;
-    // cout << "shoulder: " << sol.shoulder << endl;
-    // cout << "elbow: " << sol.elbow << endl;
-    // j1->rotation = -solutions[0].rotunda;
-  }
+//  for (auto sol: solutions) {
+//    // pls work pls work
+//    // j2->rotation -= j2->getTotalRotation(); // can get parent if you want to be safe? and not include current rotations
+//
+//    j1->rotation = -sol.rotunda + sol.shoulder;
+//    j2->rotation = +sol.elbow;
+//
+//    // cout << "rotunda: " << sol.rotunda << endl;
+//    // cout << "shoulder: " << sol.shoulder << endl;
+//    // cout << "elbow: " << sol.elbow << endl;
+//    // j1->rotation = -solutions[0].rotunda;
+//  }
+    
+    j1->rotation = -solutions[0].rotunda + solutions[0].shoulder;
+    j2->rotation = +solutions[0].elbow;
   cout << "end of solutions" << endl;
  
 }
