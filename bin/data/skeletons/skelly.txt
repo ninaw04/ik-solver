@@ -1,0 +1,3 @@
+create -joint joint0 -rotate <0.000000, 0.000000, 0.000000> -translate <0.000000, 0.000000, 0.000000> -parent none;
+create -joint joint1 -rotate <0.000000, 0.000000, 0.000000> -translate <2.000000, 0.000000, 0.000000> -parent joint0;
+create -joint joint2 -rotate <0.000000, 0.000000, 0.000000> -translate <2.000000, 0.000000, 0.000000> -parent joint1;

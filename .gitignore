@@ -43,5 +43,4 @@ libs/openFrameworksCompiled/project/makefileCommon/compile.project.mk
 *.swp
 *~
 
-# Other
-bin/data/
+
