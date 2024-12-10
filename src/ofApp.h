@@ -20,7 +20,7 @@
 #include "ofxInputField.h"
 #include "ofxSlider.h"
 
-
+#include "ofxAssimpModelLoader.h"
 
 class ofApp : public ofBaseApp{
 
@@ -111,8 +111,8 @@ class ofApp : public ofBaseApp{
         // RAHHHH
         glm::vec3 WORLDPOINT = glm::vec3(0, 0, 0);
 
-        
-
+        // ofxAssimpModelLoader shoulder;
+        // ofxAssimpModelLoader elbow;
 //        ofxButton loadSkeleton;
 //        ofxTextField skeletonPath;
 //

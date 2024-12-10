@@ -6,6 +6,8 @@
 //
 
 #include "joint.hpp"
+#include "fwd.hpp"
+#include "ofxAssimpModelLoader.h"
 
 int Joint::jointInstances = 0;
 
@@ -37,9 +39,18 @@ void Joint::draw() {
         
         ofPushMatrix();
         ofMultMatrix(coneTransform);
-        ofDrawCone(glm::vec3(0,0,0), radius, height);
+        // ofDrawCone(glm::vec3(0,0,0), radius, height);
+        boneModel.drawFaces();
         ofPopMatrix();
     }
+}
+void Joint::addModel(std::string file, glm::vec3 position) {
+  boneModel.load(file);
+
+
+  boneModel.setPosition(position.x, position.y, position.z);
+  boneModel.setScale(0.008, 0.008, 0.008);
+  cout << "created " << file << endl;
 }
 
 // intersect should stay the same since we are only movign the sphere part

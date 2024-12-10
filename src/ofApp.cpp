@@ -72,10 +72,12 @@ void ofApp::setup() {
   // joints
   j1->addChild(j2);
   j2->addChild(j3);
-
+  j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
+  j2->addModel("test1/elbow6.obj", glm::vec3(0,0 ,0));
+  
   j1->setPosition(glm::vec3(0,0,0));
-  j2->setPosition(glm::vec3(2,0,0));
-  j3->setPosition(glm::vec3(4,0,0));
+  j2->setPosition(glm::vec3(4,0,0));
+  j3->setPosition(glm::vec3(8,0,0));
   //  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
   //  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
 
