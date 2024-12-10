@@ -10,14 +10,34 @@
 
 // Generate a rotation matrix that rotates v1 to v2
 // v1, v2 must be normalized
-//
 glm::mat4 SceneObject::rotateToVector(glm::vec3 v1, glm::vec3 v2) {
+    // Normalize input vectors to ensure consistent behavior
+    v1 = glm::normalize(v1);
+    v2 = glm::normalize(v2);
 
-	glm::vec3 axis = glm::cross(v1, v2);
-	glm::quat q = glm::angleAxis(glm::angle(v1, v2), glm::normalize(axis));
-	return glm::toMat4(q);
+    // Use dot product to check if vectors are already aligned
+    float cosTheta = glm::dot(v1, v2);
+    
+    // If vectors are nearly identical, return identity matrix
+    if (cosTheta > 0.99999f) {
+        return glm::mat4(1.0f);
+    }
+
+    // If vectors are opposite, rotate 180 degrees around an arbitrary axis
+    if (cosTheta < -0.99999f) {
+        // Choose an arbitrary perpendicular axis
+        glm::vec3 axis = glm::abs(v1.y) < 0.9f ? 
+            glm::cross(v1, glm::vec3(0,1,0)) : 
+            glm::cross(v1, glm::vec3(1,0,0));
+        return glm::rotate(glm::mat4(1.0f), glm::pi<float>(), glm::normalize(axis));
+    }
+
+    // Standard rotation calculation
+    glm::vec3 axis = glm::cross(v1, v2);
+    float angle = std::acos(cosTheta);
+    
+    return glm::rotate(glm::mat4(1.0f), angle, glm::normalize(axis));
 }
-
 
 // Draw a Unit cube (size = 2) transformed 
 //

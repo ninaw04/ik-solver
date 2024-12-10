@@ -31,7 +31,7 @@ public:
 
     // x, y, z plane
     char plane = 'y';
-    
+    glm::vec3 bonePos;
     bool xConstraint = false;
     bool yConstraint = false;
     bool zConstraint = false;

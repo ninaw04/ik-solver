@@ -38,7 +38,7 @@ void ofApp::setup() {
   topCam.setPosition(0, 16, 0);
   topCam.lookAt(glm::vec3(0, 0, 0));
   ofSetSmoothLighting(true);
-
+  ofSetFrameRate(24);
   // setup one point light
   //
   light1.enable();
@@ -73,7 +73,7 @@ void ofApp::setup() {
   j1->addChild(j2);
   j2->addChild(j3);
   j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
-  j2->addModel("test1/elbow6.obj", glm::vec3(0,0 ,0));
+  j2->addModel("test1/elbow7.obj", glm::vec3(0,0 ,0));
   
   j1->setPosition(glm::vec3(0,0,0));
   j2->setPosition(glm::vec3(4,0,0));
@@ -94,8 +94,43 @@ void ofApp::setup() {
   // expand this to
 }
 
-//--------------------------------------------------------------
-void ofApp::update() {}
+void ofApp::update() {
+
+  if (bInPlayback) {
+    nextFrame();
+  }
+
+  // nextFrame();
+  // if keyframes are set and the current frame is between
+  // the two keys, then we need to calculate "in-between" values
+  // for position/rotation of the object that is keyframed.
+  // we then "set" the keyframed objects' position/rotation to
+  // the calculated value.
+  //
+  // cout << frame << endl;
+  if (keyFramesSet() && (frame >= key1.frame && frame <= key2.frame)) {
+    // key1.obj->position = linearInterp(frame, key1.frame, key2.frame,
+    // key1.position, key2.position);
+
+    // add more interpoliation types/channels here...
+    // key1.obj->position = ease(frame, key1.frame, key2.frame,
+    // // key1.position, key2.position);
+    // cout << "rotunda movement: " << key1.configRotations.rotunda << " "
+    //      << key2.configRotations.rotunda << endl;
+    // cout << "shoulder movement: " << key1.configRotations.shoulder << " " << key2.configRotations.shoulder << endl;
+    // cout << "elbow movement: " << key1.configRotations.elbow << " " << key2.configRotations.elbow << endl;
+    // cout << "frame : " << key1.frame << " " << key2.frame << endl;
+    j1->rotation =
+        easeInterp(frame, key1.frame, key2.frame, key1.configRotations.rotunda,
+                   key2.configRotations.rotunda);
+    j1->rotation +=
+        easeInterp(frame, key1.frame, key2.frame, key1.configRotations.shoulder,
+                   key2.configRotations.shoulder);
+    j2->rotation = easeInterp(frame, key1.frame, key2.frame, key1.configRotations.elbow,
+                   key2.configRotations.elbow);
+    
+  }
+}
 
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -399,6 +434,10 @@ void ofApp::keyPressed(int key) {
   }
   case 'n':
     break;
+  case ' ':
+    bInPlayback = !bInPlayback;
+    cout << "bInPlayback: " << bInPlayback << endl;
+    break;
   case 'p':
     if (objSelected())
       printChannels(selected[0]);
@@ -582,10 +621,12 @@ void ofApp::mousePressed(int x, int y, int button) {
 
   if (!itemIntersected) {
     //        cout << "mouse point: " << worldPoint << endl;
+    resetKeyFrames();
     WORLDPOINT = worldPoint;
     solutions.clear();
     inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
-    handleSolutions(solutions);
+    setKeyFrame();
+    // handleSolutions(solutions);
   }
 
   // if we selected more than one, pick nearest
@@ -743,7 +784,7 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
   // convert all solution pairs into solution triplets yee haw
   for (pair<glm::vec2, glm::vec2> sol : solutionPairs1) {
     jointDegrees3R config;
-    config.rotunda = glm::vec3(0, joint1Angle, 0);
+    config.rotunda = glm::vec3(0, -joint1Angle, 0);
     config.shoulder =
         glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
     config.elbow =
@@ -762,7 +803,7 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
     
     for (pair<glm::vec2, glm::vec2> sol : solutionPairs2) {
       jointDegrees3R config;
-      config.rotunda = glm::vec3(0, joint1Angle + 180, 0);
+      config.rotunda = glm::vec3(0, -(joint1Angle + 180), 0);
       config.shoulder =
           glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
       config.elbow =
@@ -812,7 +853,7 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
 //    // j1->rotation = -solutions[0].rotunda;
 //  }
     
-    j1->rotation = -solutions[0].rotunda + solutions[0].shoulder;
+    j1->rotation = solutions[0].rotunda + solutions[0].shoulder;
     j2->rotation = +solutions[0].elbow;
   cout << "end of solutions" << endl;
  

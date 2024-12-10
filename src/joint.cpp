@@ -34,20 +34,24 @@ void Joint::draw() {
         
         glm::vec3 coneDir = glm::vec3(0,1,0);
         glm::vec3 direction = glm::normalize(p1 - p2);
+        // pivot = position;
+        // glm::mat4 pre = glm::translate(glm::mat4(1.0), glm::vec3(-pivot.x, -pivot.y, -pivot.z));
+		    // glm::mat4 post = glm::translate(glm::mat4(1.0), glm::vec3(pivot.x, pivot.y, pivot.z));
         glm::mat4 rotationMatrix = rotateToVector(coneDir, direction);
-        glm::mat4 coneTransform = glm::translate(glm::mat4(1.0f), (p1+p2)/2) * rotationMatrix;
+        glm::mat4 coneTransform = glm::translate(glm::mat4(1.0f), (p1+p2)/2)  * rotationMatrix ;
         
         ofPushMatrix();
         ofMultMatrix(coneTransform);
         // ofDrawCone(glm::vec3(0,0,0), radius, height);
         boneModel.drawFaces();
+        
         ofPopMatrix();
     }
 }
 void Joint::addModel(std::string file, glm::vec3 position) {
   boneModel.load(file);
 
-
+  bonePos = position;
   boneModel.setPosition(position.x, position.y, position.z);
   boneModel.setScale(0.008, 0.008, 0.008);
   cout << "created " << file << endl;
