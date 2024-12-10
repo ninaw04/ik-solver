@@ -650,80 +650,66 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
   // RETURN VALUE IS CHANGING JOINT 1 AND 2 ROTATION
 
   double targetLen = glm::length(target);
-
   double bone1 = glm::distance(joint1.getPosition(), joint2.getPosition());
   double bone2 = glm::distance(joint2.getPosition(), joint3.getPosition());
-  double numerator =
-      glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
+  double numerator = glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
   double denominator = 2 * bone1 * bone2;
   double c2 = 0; // idk is this best practice
 
   glm::vec2 rot1, rot2;
-  // glm::vec3 j1TotalRot = joint1.getTotalRotation();
-  // glm::vec3 j2TotalRot = joint2.getTotalRotation();
 
   if (denominator == 0) {
-    printf("pattern says this is inappropriate\n");
-    return;
+      printf("pattern says this is inappropriate\n");
+      return;
   } else {
-    c2 = numerator / denominator;
+      c2 = numerator / denominator;
   }
 
   if (glm::abs(c2) > 1) {
-    printf("no bueno target location\n");
-    return;
+      printf("no bueno target location\n");
+      return;
   } else if (c2 == 1) {
-    // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
-    rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
-    rot2 = glm::vec2(0, 0);
-    solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and
-             target !=
-                 glm::vec2(
-                     0,
-                     0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
-    rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
-    rot2 = glm::degrees(glm::vec2(0, PI));
-    solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and
-             target ==
-                 glm::vec2(
-                     0,
-                     0)) { // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
-    // as long as q2 is pi, q1 can be anything, we are returning the original
-    // joint rotation
-    rot1 = joint1.rotation;                // (q1)
-    rot2 = glm::degrees(glm::vec2(0, PI)); // pi
-    solutions.push_back(pair(rot1, rot2));
-  } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
-    double theta = atan2(target.y, target.x);
-    for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
-      // positive and negative q2
-      rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2))) // might be complement
-                      : glm::degrees(glm::vec2(0, -glm::acos(c2)));
-      // finding q1
-        double sinRot2 = sin(rot2.y);
-      double joint1RotationZ =
-          theta - atan2(bone2 * sin(rot2.y), bone1 + (bone2 * cos(rot2.y)));
-//        double joint1RotationZ =
-//            atan2(bone2 * sin(rot2.y), bone1 + (bone2 * cos(rot2.y)));
-      rot1 = glm::degrees(glm::vec2(0, joint1RotationZ));
-      cout << "rot1 joint1: " << rot1 << endl;
-      cout << "rot2 joint2: " << rot2 << endl;
+      // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
+      rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
+      rot2 = glm::vec2(0, 0);
       solutions.push_back(pair(rot1, rot2));
-    }
+  } else if (c2 == -1 and target != glm::vec2(0,0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
+      rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
+      rot2 = glm::degrees(glm::vec2(0, PI));
+      solutions.push_back(pair(rot1, rot2));
+  } else if (c2 == -1 and target == glm::vec2(0,0)) { // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
+      // as long as q2 is pi, q1 can be anything, we are returning the original
+      // joint rotation
+      rot1 = joint1.rotation;                // (q1)
+      rot2 = glm::degrees(glm::vec2(0, PI)); // pi
+      solutions.push_back(pair(rot1, rot2));
+  } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
+      
+      double theta = glm::degrees(atan2(target.y, target.x));
+      cout << "theta: " << theta << endl;
+      for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
+          // positive and negative q2
+          rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2)))
+                    : glm::degrees(glm::vec2(0, -glm::acos(c2)));
+          
+          cout << "numerator: " << (bone2 * sin(glm::radians(rot2.y))) << endl;
+          cout << "denom: " << (bone1 + (bone2*cos(glm::radians(rot2.y)))) << endl;
+
+          double endEffHeading = glm::degrees(atan2(bone2 * sin(glm::radians(rot2.y)), bone1 + (bone2 * cos(glm::radians(rot2.y)))));
+          double joint1RotationZ = theta - endEffHeading;
+
+          cout << "endeff heading: " << endEffHeading << endl;
+          cout << "rot 2 y: " << rot2.y << endl;
+
+          rot1 = glm::vec2(0, joint1RotationZ);
+          solutions.push_back(pair(rot1, rot2));
+      }
   }
-
-//  solutions.push_back(pair(rot1, rot2)); //TODOOOOOO ADD THESE BACK IN
-
-  // cout << "target: " << target << endl;
-  // cout << "target length: " << targetLen << endl;
 
   // law of cosines, the distance from end effector to rotunda
   double gamma = rot2.y;
   double endEfDist =
       sqrt(pow(bone1, 2) + pow(bone2, 2) - (2 * bone1 * bone2 * cos(gamma)));
-  // cout << "bone distance: " << endEfDist << endl;
 
   // change rotation to corresponding axis???
   // JOINT.plane stores the rotation plane, so make a switch case thingy based
@@ -738,21 +724,22 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
   // calculate shoulder and elbow rotation about the z plane
   double shoulderOffset = 0; // l1 is offset from rotunda to shoulder
   glm::vec2 targetVec2Pos =
-      glm::vec2(sqrt(pow(target.x, 2) + pow(target.z, 2)), -target.y + shoulderOffset);
+      glm::vec2(sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
   glm::vec2 targetVec2Neg =
-      glm::vec2(-sqrt(pow(target.x, 2) + pow(target.z, 2)), -target.y + shoulderOffset);
+      glm::vec2(-sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
 
-  vector<pair<glm::vec2, glm::vec2>> solutionPairs;
-  inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs);
-  inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs);
-
+  vector<pair<glm::vec2, glm::vec2>> solutionPairs1, solutionPairs2;
+    cout << "Vector 2 Positive" << endl;
+  inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs1);
+  inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs2);
 
 
   double joint1Angle =
-      glm::atan(target.z, target.x) * 180 / PI; // rotunda rotation about the y
-
+      glm::degrees(glm::atan(target.z, target.x)); // rotunda rotation about the y
+    
+    int i = 0;
   // convert all solution pairs into solution triplets yee haw
-  for (pair<glm::vec2, glm::vec2> sol : solutionPairs) {
+  for (pair<glm::vec2, glm::vec2> sol : solutionPairs1) {
     jointDegrees3R config;
     config.rotunda = glm::vec3(0, joint1Angle, 0);
     config.shoulder =
@@ -760,11 +747,34 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
     config.elbow =
         glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
     
+      cout << i << ":" << endl;
+      cout << "rotunda: " << config.rotunda << endl;
+      cout << "shoulder: " << config.shoulder << endl;
+      cout << "elbow: " << config.elbow << endl;
+      i++;
 
     // check if valid within constraints
     // config.elbow -= joint2.getTotalRotation();
     solutions.push_back(config);
   }
+    
+    for (pair<glm::vec2, glm::vec2> sol : solutionPairs2) {
+      jointDegrees3R config;
+      config.rotunda = glm::vec3(0, joint1Angle + 180, 0);
+      config.shoulder =
+          glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
+      config.elbow =
+          glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
+      
+        cout << i << ":" << endl;
+        cout << "rotunda: " << config.rotunda << endl;
+        cout << "shoulder: " << config.shoulder << endl;
+        cout << "elbow: " << config.elbow << endl;
+      // check if valid within constraints
+      // config.elbow -= joint2.getTotalRotation();
+      solutions.push_back(config);
+        i++;
+    }
 
   // part of solutions
   //    joint1.rotation = glm::vec3(joint1.rotation.x, -joint1Angle,
