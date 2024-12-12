@@ -625,7 +625,12 @@ void ofApp::mousePressed(int x, int y, int button) {
     WORLDPOINT = worldPoint;
     solutions.clear();
     inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
+    
+    // animation
+    setFirstFrame();
     setKeyFrame();
+    bInPlayback = true;
+    cout << "bInPlayback: " << bInPlayback << endl;
     // handleSolutions(solutions);
   }
 
@@ -729,20 +734,20 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
   } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
       
       double theta = glm::degrees(atan2(target.y, target.x));
-      cout << "theta: " << theta << endl;
+//      cout << "theta: " << theta << endl;
       for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
           // positive and negative q2
           rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2)))
                     : glm::degrees(glm::vec2(0, -glm::acos(c2)));
           
-          cout << "numerator: " << (bone2 * sin(glm::radians(rot2.y))) << endl;
-          cout << "denom: " << (bone1 + (bone2*cos(glm::radians(rot2.y)))) << endl;
+//          cout << "numerator: " << (bone2 * sin(glm::radians(rot2.y))) << endl;
+//          cout << "denom: " << (bone1 + (bone2*cos(glm::radians(rot2.y)))) << endl;
 
           double endEffHeading = glm::degrees(atan2(bone2 * sin(glm::radians(rot2.y)), bone1 + (bone2 * cos(glm::radians(rot2.y)))));
           double joint1RotationZ = theta - endEffHeading;
 
-          cout << "endeff heading: " << endEffHeading << endl;
-          cout << "rot 2 y: " << rot2.y << endl;
+//          cout << "endeff heading: " << endEffHeading << endl;
+//          cout << "rot 2 y: " << rot2.y << endl;
 
           rot1 = glm::vec2(0, joint1RotationZ);
           solutions.push_back(pair(rot1, rot2));
@@ -772,7 +777,7 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
       glm::vec2(-sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
 
   vector<pair<glm::vec2, glm::vec2>> solutionPairs1, solutionPairs2;
-    cout << "Vector 2 Positive" << endl;
+//    cout << "Vector 2 Positive" << endl;
   inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs1);
   inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs2);
 
@@ -780,7 +785,7 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
   double joint1Angle =
       glm::degrees(glm::atan(target.z, target.x)); // rotunda rotation about the y
     
-    int i = 0;
+//    int i = 0;
   // convert all solution pairs into solution triplets yee haw
   for (pair<glm::vec2, glm::vec2> sol : solutionPairs1) {
     jointDegrees3R config;
@@ -790,11 +795,11 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
     config.elbow =
         glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
     
-      cout << i << ":" << endl;
-      cout << "rotunda: " << config.rotunda << endl;
-      cout << "shoulder: " << config.shoulder << endl;
-      cout << "elbow: " << config.elbow << endl;
-      i++;
+//      cout << i << ":" << endl;
+//      cout << "rotunda: " << config.rotunda << endl;
+//      cout << "shoulder: " << config.shoulder << endl;
+//      cout << "elbow: " << config.elbow << endl;
+//      i++;
 
     // check if valid within constraints
     // config.elbow -= joint2.getTotalRotation();
@@ -809,14 +814,14 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
       config.elbow =
           glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
       
-        cout << i << ":" << endl;
-        cout << "rotunda: " << config.rotunda << endl;
-        cout << "shoulder: " << config.shoulder << endl;
-        cout << "elbow: " << config.elbow << endl;
+//        cout << i << ":" << endl;
+//        cout << "rotunda: " << config.rotunda << endl;
+//        cout << "shoulder: " << config.shoulder << endl;
+//        cout << "elbow: " << config.elbow << endl;
       // check if valid within constraints
       // config.elbow -= joint2.getTotalRotation();
       solutions.push_back(config);
-        i++;
+//        i++;
     }
 
   // part of solutions

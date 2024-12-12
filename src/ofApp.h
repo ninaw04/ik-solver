@@ -127,13 +127,21 @@ class ofApp : public ofBaseApp{
 
         	// key framing
 	//
+  void setFirstFrame() {
+    frame = frameBegin;
+  }
 	void nextFrame() {
-		frame = (frame == frameEnd ? frameBegin: frame + 1);
+//		frame = (frame == frameEnd ? frameBegin: frame + 1);
+    if (frame != frameEnd) {
+      frame = frame + 1;
+    }
+
 	}
 	void prevFrame() {
 		frame = (frame == frameBegin ? frame : frame - 1);
 	}
 	void startPlayback() {
+//    frame = frameBegin;
 		bInPlayback = true;
 	}
 
