@@ -112,6 +112,9 @@ public:
   ofxToggle xAxis;
   ofxToggle yAxis;
   ofxToggle zAxis;
+  
+  ofTrueTypeFont font;
+  int displaySolution;
 
   // ARM
   Joint *j1 = new Joint();
@@ -198,6 +201,7 @@ public:
   //
   void setKeyFrame(int index) {
     int solIndex = index % solutions.size();
+    displaySolution = solIndex;
     key1.frame = frameBegin;
     key2.frame = frameEnd;
     cout << solutions.size() << endl;

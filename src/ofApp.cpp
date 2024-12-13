@@ -15,8 +15,6 @@
 #include "ofColor.h"
 #include "ofGraphics.h"
 
-#define PI 3.14
-
 //--------------------------------------------------------------
 //
 void ofApp::setup() {
@@ -63,6 +61,9 @@ void ofApp::setup() {
   gui.add(xAxis.setup("X Axis contraint", false));
   gui.add(yAxis.setup("Y Axis contraint", false));
   gui.add(zAxis.setup("Z Axis contraint", false));
+  
+  font.load("fonts/ArgakaFashion-Regular.otf", 24);
+  displaySolution = -1;
 
   //  create a scene consisting of a ground plane with 2x2 blocks
   //  arranged in semi-random positions, scales and rotations
@@ -144,6 +145,16 @@ void ofApp::draw() {
   ofEnableLighting();
 
   ofDrawSphere(WORLDPOINT, 0.2);
+  
+  ofSetColor(ofColor::white);
+//  ofDrawBitmapString("Simple Text", -5, 10);
+  ofPushMatrix(); // Save the current transformation state
+  ofScale(0.07, 0.07);
+  font.drawString("Displaying", -70, 160);
+  font.drawString("Solution: " + to_string(displaySolution), -70, 130);
+  cout << "solution: " << displaySolution << endl;
+  ofPopMatrix();
+  
 
   //  draw the objects in scene
   //
