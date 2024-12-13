@@ -442,8 +442,13 @@ void ofApp::keyPressed(int key) {
   case 'n':
     index++;
     cout << key1.configRotations.rotunda << endl;
+    cout << key1.configRotations.shoulder << endl;
+    cout << key1.configRotations.elbow << endl;
     resetKeyFrames();
+    cout << "\nafter keyFrames" << endl;
     cout << key1.configRotations.rotunda << endl;
+    cout << key1.configRotations.shoulder << endl;
+    cout << key1.configRotations.elbow << endl;
 
     setFirstFrame();
     setKeyFrame(index);

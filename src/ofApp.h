@@ -202,9 +202,9 @@ public:
     key2.frame = frameEnd;
     cout << solutions.size() << endl;
     if (solutions.size() > 0) {
-      key1.configRotations = {.rotunda = glm::vec3(0, j1->rotation.y, 0),
-                              .shoulder = glm::vec3(0, 0, j1->rotation.z),
-                              .elbow = glm::vec3(0, 0, j2->rotation.z)};
+//      key1.configRotations = {.rotunda = glm::vec3(0, j1->rotation.y, 0),
+//                              .shoulder = glm::vec3(0, 0, j1->rotation.z),
+//                              .elbow = glm::vec3(0, 0, j2->rotation.z)};
       key2.configRotations = {.rotunda = solutions[solIndex].rotunda,
                               .shoulder = solutions[solIndex].shoulder,
                               .elbow = solutions[solIndex].elbow};
