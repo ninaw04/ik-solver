@@ -72,8 +72,10 @@ void ofApp::setup() {
   // joints
   j1->addChild(j2);
   j2->addChild(j3);
-  j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
-  j2->addModel("test1/elbow7.obj", glm::vec3(0,0 ,0));
+//  j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
+//  j2->addModel("test1/elbow7.obj", glm::vec3(0,0 ,0));
+  
+  j1->addModel("pixar/lamp.obj", glm::vec3(0,0,0));
   
   j1->setPosition(glm::vec3(0,0,0));
   j2->setPosition(glm::vec3(4,0,0));
