@@ -11,10 +11,9 @@
 //
 
 #include "ofApp.h"
-//#include "fwd.hpp"
+// #include "fwd.hpp"
 #include "ofColor.h"
 #include "ofGraphics.h"
-
 
 #define PI 3.14
 
@@ -55,14 +54,12 @@ void ofApp::setup() {
   gui.add(jointX.setup(std::string("0")));
   gui.add(jointY.setup(std::string("0")));
   gui.add(jointZ.setup(std::string("0")));
-//  gui.add(minAngle.setup("Min Angle (No label selected)", -180, -180, 180));
-//  gui.add(maxAngle.setup("Max Angle (No label selected)", 180, -180, 180));
-  gui.add(minx.setup("Min Angle (No label selected)", -180, -180, 180));
-  gui.add(maxx.setup("Max Angle (No label selected)", 180, -180, 180));
-  gui.add(miny.setup("Min Angle (No label selected)", -180, -180, 180));
-  gui.add(maxy.setup("Max Angle (No label selected)", 180, -180, 180));
-  gui.add(minz.setup("Min Angle (No label selected)", -180, -180, 180));
-  gui.add(maxz.setup("Max Angle (No label selected)", 180, -180, 180));
+  //  gui.add(minAngle.setup("Min Angle (No label selected)", -180, -180, 180));
+  //  gui.add(maxAngle.setup("Max Angle (No label selected)", 180, -180, 180))
+  gui.add(miny.setup("Min y Angle (No label selected)", 0, 0, 180));
+  gui.add(maxy.setup("Max y Angle (No label selected)", 180, -180, 180));
+  gui.add(minz.setup("Min z Angle (No label selected)", 0, 0, 180));
+  gui.add(maxz.setup("Max z Angle (No label selected)", 180, -180, 180));
   gui.add(xAxis.setup("X Axis contraint", false));
   gui.add(yAxis.setup("Y Axis contraint", false));
   gui.add(zAxis.setup("Z Axis contraint", false));
@@ -72,26 +69,21 @@ void ofApp::setup() {
   //
   // ground plane
   //
-  scene.push_back(new Plane(glm::vec3(0, -2, 0), glm::vec3(0, 1, 0)));
+  scene.push_back(new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0),
+                            ofColor::darkOrchid));
 
   // Simple 2 R joint arm solution
   // joints
-  j1->update();
-  j2->update();
-  j3->update();
-  
   j1->addChild(j2);
   j2->addChild(j3);
   j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
-  j2->addModel("test1/elbow7.obj", glm::vec3(0,0 ,0));
-  
-  j1->setPosition(glm::vec3(0,0,0));
-  j2->setPosition(glm::vec3(4,0,0));
-  j3->setPosition(glm::vec3(8,0,0));
+  j2->addModel("test1/elbow7.obj", glm::vec3(0, 0, 0));
+
+  j1->setPosition(glm::vec3(0, 0, 0));
+  j2->setPosition(glm::vec3(4, 0, 0));
+  j3->setPosition(glm::vec3(8, 0, 0));
   //  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
   //  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
-
-  
 
   // j3->addChild(j4);
 
@@ -127,8 +119,9 @@ void ofApp::update() {
     // // key1.position, key2.position);
     // cout << "rotunda movement: " << key1.configRotations.rotunda << " "
     //      << key2.configRotations.rotunda << endl;
-    // cout << "shoulder movement: " << key1.configRotations.shoulder << " " << key2.configRotations.shoulder << endl;
-    // cout << "elbow movement: " << key1.configRotations.elbow << " " << key2.configRotations.elbow << endl;
+    // cout << "shoulder movement: " << key1.configRotations.shoulder << " " <<
+    // key2.configRotations.shoulder << endl; cout << "elbow movement: " <<
+    // key1.configRotations.elbow << " " << key2.configRotations.elbow << endl;
     // cout << "frame : " << key1.frame << " " << key2.frame << endl;
     j1->rotation =
         easeInterp(frame, key1.frame, key2.frame, key1.configRotations.rotunda,
@@ -136,9 +129,9 @@ void ofApp::update() {
     j1->rotation +=
         easeInterp(frame, key1.frame, key2.frame, key1.configRotations.shoulder,
                    key2.configRotations.shoulder);
-    j2->rotation = easeInterp(frame, key1.frame, key2.frame, key1.configRotations.elbow,
+    j2->rotation =
+        easeInterp(frame, key1.frame, key2.frame, key1.configRotations.elbow,
                    key2.configRotations.elbow);
-    
   }
 }
 
@@ -189,8 +182,13 @@ void ofApp::draw() {
     selectedJoint->xConstraint = xAxis;
     selectedJoint->yConstraint = yAxis;
     selectedJoint->zConstraint = zAxis;
-    selectedJoint->range.first = minAngle;
-    selectedJoint->range.second = maxAngle;
+    // selectedJoint->range.first = minAngle;
+    // selectedJoint->range.second = maxAngle;
+
+    selectedJoint->yrange.first = miny;
+    selectedJoint->yrange.second = maxy;
+    selectedJoint->zrange.first = minz;
+    selectedJoint->zrange.second = maxz;
 
   } else {
     jointName = "Joint Name: No joint selected";
@@ -199,7 +197,6 @@ void ofApp::draw() {
     jointZ = "Rotation Z: 0";
   }
   gui.draw();
-  
 
   ofEnableDepthTest();
 }
@@ -443,6 +440,13 @@ void ofApp::keyPressed(int key) {
     break;
   }
   case 'n':
+    index++;
+    cout << key1.configRotations.rotunda << endl;
+    resetKeyFrames();
+    cout << key1.configRotations.rotunda << endl;
+
+    setFirstFrame();
+    setKeyFrame(index);
     break;
   case ' ':
     bInPlayback = !bInPlayback;
@@ -523,42 +527,47 @@ void ofApp::mouseDragged(int x, int y, int button) {
   if (objSelected() && bDrag) {
     glm::vec3 point;
     mouseToDragPlane(x, y, point);
-    if (bRotateX) {
-      auto nextRotation = selected[0]->rotation +
-                          glm::vec3((point.x - lastPoint.x) * 20.0, 0, 0);
-      //   selected[0]->rotation += glm::vec3((point.x - lastPoint.x) * 20.0, 0,
-      //   0);
-      Joint *j = dynamic_cast<Joint *>(selected[0]);
-
-      if (j != nullptr && j->xConstraint && j->range.first <= nextRotation.x &&
-          j->range.second >= nextRotation.x) {
-        selected[0]->rotation = nextRotation;
-      }
-    } else if (bRotateY) {
-      auto nextRotation = selected[0]->rotation +
-                          glm::vec3(0, (point.x - lastPoint.x) * 20.0, 0);
-      Joint *j = dynamic_cast<Joint *>(selected[0]);
-
-      if (j != nullptr && j->yConstraint && j->range.first <= nextRotation.y &&
-          j->range.second >= nextRotation.y) {
-        selected[0]->rotation = nextRotation;
-      }
-
-    } else if (bRotateZ) {
-      auto nextRotation = selected[0]->rotation +
-                          glm::vec3(0, 0, (point.x - lastPoint.x) * 20.0);
-
-      Joint *j = dynamic_cast<Joint *>(selected[0]);
-
-      if (j != nullptr && j->zConstraint && j->range.first <= nextRotation.z &&
-          j->range.second >= nextRotation.z) {
-        selected[0]->rotation = nextRotation;
-      }
-    } else {
-      selected[0]->position += (point - lastPoint); // translate
-    }
-    lastPoint = point;
   }
+  //   if (bRotateX) {
+  //     auto nextRotation = selected[0]->rotation +
+  //                         glm::vec3((point.x - lastPoint.x) * 20.0, 0, 0);
+  //     //   selected[0]->rotation += glm::vec3((point.x - lastPoint.x) * 20.0,
+  //     0,
+  //     //   0);
+  //     Joint *j = dynamic_cast<Joint *>(selected[0]);
+
+  //     if (j != nullptr && j->xConstraint && j->xrange.first <= nextRotation.x
+  //     &&
+  //         j->xrange.second >= nextRotation.x) {
+  //       selected[0]->rotation = nextRotation;
+  //     }
+  //   } else if (bRotateY) {
+  //     auto nextRotation = selected[0]->rotation +
+  //                         glm::vec3(0, (point.x - lastPoint.x) * 20.0, 0);
+  //     Joint *j = dynamic_cast<Joint *>(selected[0]);
+
+  //     if (j != nullptr && j->yConstraint && j->yrange.first <= nextRotation.y
+  //     &&
+  //         j->yrange.second >= nextRotation.y) {
+  //       selected[0]->rotation = nextRotation;
+  //     }
+
+  //   } else if (bRotateZ) {
+  //     auto nextRotation = selected[0]->rotation +
+  //                         glm::vec3(0, 0, (point.x - lastPoint.x) * 20.0);
+
+  //     Joint *j = dynamic_cast<Joint *>(selected[0]);
+
+  //     if (j != nullptr && j->zConstraint && j->zrange.first <= nextRotation.z
+  //     &&
+  //         j->zrange.second >= nextRotation.z) {
+  //       selected[0]->rotation = nextRotation;
+  //     }
+  //   } else {
+  //     selected[0]->position += (point - lastPoint); // translate
+  //   }
+  //   lastPoint = point;
+  // }
 }
 
 //  This projects the mouse point in screen space (x, y) to a 3D point on a
@@ -631,14 +640,19 @@ void ofApp::mousePressed(int x, int y, int button) {
 
   if (!itemIntersected) {
     //        cout << "mouse point: " << worldPoint << endl;
+    startConfig = {.rotunda = glm::vec3(0, j1->rotation.y, 0),
+                   .shoulder = glm::vec3(0, 0, j1->rotation.z),
+                   .elbow = glm::vec3(0, 0, j2->rotation.z)};
     resetKeyFrames();
     WORLDPOINT = worldPoint;
     solutions.clear();
-    inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
     
+    inverseKin3(worldPoint, *j1, *j2,
+                                                          *j3, solutions);
+
     // animation
     setFirstFrame();
-    setKeyFrame();
+    setKeyFrame(index);
     bInPlayback = true;
     // handleSolutions(solutions);
   }
@@ -666,21 +680,21 @@ void ofApp::mousePressed(int x, int y, int button) {
       xAxis = selectedJoint->xConstraint;
       yAxis = selectedJoint->yConstraint;
       zAxis = selectedJoint->zConstraint;
-//      minAngle = selectedJoint->range.first;
-//      maxAngle = selectedJoint->range.second;
-      
-//      selectedJoint->constraints.minx = selectedJoint->xrange.first;
-//      selectedJoint->constraints.maxx = selectedJoint->xrange.second;
-//      selectedJoint->constraints.miny = selectedJoint->yrange.first;
-//      selectedJoint->constraints.maxy = selectedJoint->yrange.second;
-//      selectedJoint->constraints.minz = selectedJoint->zrange.first;
-//      selectedJoint->constraints.maxz = selectedJoint->zrange.second;
-      minx = selectedJoint->xrange.first;
-      maxx = selectedJoint->xrange.second;
-      miny = selectedJoint->yrange.first;
-      maxy = selectedJoint->yrange.second;
-      minz = selectedJoint->zrange.first;
-      maxz = selectedJoint->zrange.second;
+      //      minAngle = selectedJoint->range.first;
+      //      maxAngle = selectedJoint->range.second;
+
+      selectedJoint->constraints.minx = selectedJoint->xrange.first;
+      selectedJoint->constraints.maxx = selectedJoint->xrange.second;
+      selectedJoint->constraints.miny = selectedJoint->yrange.first;
+      selectedJoint->constraints.maxy = selectedJoint->yrange.second;
+      selectedJoint->constraints.minz = selectedJoint->zrange.first;
+      selectedJoint->constraints.maxz = selectedJoint->zrange.second;
+      // minx = selectedJoint->xrange.first;
+      // maxx = selectedJoint->xrange.second;
+      // miny = selectedJoint->yrange.first;
+      // maxy = selectedJoint->yrange.second;
+      // minz = selectedJoint->zrange.first;
+      // maxz = selectedJoint->zrange.second;
     }
   } else {
     selected.clear();
@@ -722,58 +736,70 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
   double targetLen = glm::length(target);
   double bone1 = glm::distance(joint1.getPosition(), joint2.getPosition());
   double bone2 = glm::distance(joint2.getPosition(), joint3.getPosition());
-  double numerator = glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
+  double numerator =
+      glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
   double denominator = 2 * bone1 * bone2;
   double c2 = 0; // idk is this best practice
 
   glm::vec2 rot1, rot2;
 
   if (denominator == 0) {
-      printf("pattern says this is inappropriate\n");
-      return;
+    printf("pattern says this is inappropriate\n");
+    return;
   } else {
-      c2 = numerator / denominator;
+    c2 = numerator / denominator;
   }
 
   if (glm::abs(c2) > 1) {
-      printf("no bueno target location\n");
-      return;
+    printf("no bueno target location\n");
+    return;
   } else if (c2 == 1) {
-      // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
-      rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
-      rot2 = glm::vec2(0, 0);
-      solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and target != glm::vec2(0,0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
-      rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
-      rot2 = glm::degrees(glm::vec2(0, PI));
-      solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and target == glm::vec2(0,0)) { // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
-      // as long as q2 is pi, q1 can be anything, we are returning the original
-      // joint rotation
-      rot1 = joint1.rotation;                // (q1)
-      rot2 = glm::degrees(glm::vec2(0, PI)); // pi
-      solutions.push_back(pair(rot1, rot2));
+    // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
+    rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
+    rot2 = glm::vec2(0, 0);
+    solutions.push_back(pair(rot1, rot2));
+  } else if (c2 == -1 and
+             target !=
+                 glm::vec2(
+                     0,
+                     0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
+    rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
+    rot2 = glm::degrees(glm::vec2(0, PI));
+    solutions.push_back(pair(rot1, rot2));
+  } else if (c2 == -1 and
+             target ==
+                 glm::vec2(
+                     0,
+                     0)) { // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
+    // as long as q2 is pi, q1 can be anything, we are returning the original
+    // joint rotation
+    rot1 = joint1.rotation;                // (q1)
+    rot2 = glm::degrees(glm::vec2(0, PI)); // pi
+    solutions.push_back(pair(rot1, rot2));
   } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
-      
-      double theta = glm::degrees(atan2(target.y, target.x));
-//      cout << "theta: " << theta << endl;
-      for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
-          // positive and negative q2
-          rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2)))
-                    : glm::degrees(glm::vec2(0, -glm::acos(c2)));
-          
-//          cout << "numerator: " << (bone2 * sin(glm::radians(rot2.y))) << endl;
-//          cout << "denom: " << (bone1 + (bone2*cos(glm::radians(rot2.y)))) << endl;
 
-          double endEffHeading = glm::degrees(atan2(bone2 * sin(glm::radians(rot2.y)), bone1 + (bone2 * cos(glm::radians(rot2.y)))));
-          double joint1RotationZ = theta - endEffHeading;
+    double theta = glm::degrees(atan2(target.y, target.x));
+    //      cout << "theta: " << theta << endl;
+    for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
+      // positive and negative q2
+      rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2)))
+                      : glm::degrees(glm::vec2(0, -glm::acos(c2)));
 
-//          cout << "endeff heading: " << endEffHeading << endl;
-//          cout << "rot 2 y: " << rot2.y << endl;
+      //          cout << "numerator: " << (bone2 * sin(glm::radians(rot2.y)))
+      //          << endl; cout << "denom: " << (bone1 +
+      //          (bone2*cos(glm::radians(rot2.y)))) << endl;
 
-          rot1 = glm::vec2(0, joint1RotationZ);
-          solutions.push_back(pair(rot1, rot2));
-      }
+      double endEffHeading =
+          glm::degrees(atan2(bone2 * sin(glm::radians(rot2.y)),
+                             bone1 + (bone2 * cos(glm::radians(rot2.y)))));
+      double joint1RotationZ = theta - endEffHeading;
+
+      //          cout << "endeff heading: " << endEffHeading << endl;
+      //          cout << "rot 2 y: " << rot2.y << endl;
+
+      rot1 = glm::vec2(0, joint1RotationZ);
+      solutions.push_back(pair(rot1, rot2));
+    }
   }
 
   // law of cosines, the distance from end effector to rotunda
@@ -789,25 +815,23 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
 }
 
 void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
-                        Joint &joint3,
-                        vector<jointDegrees3R> &solutions) {
+                        Joint &joint3, vector<jointDegrees3R> &solutions) {
   // calculate shoulder and elbow rotation about the z plane
   double shoulderOffset = 0; // l1 is offset from rotunda to shoulder
-  glm::vec2 targetVec2Pos =
-      glm::vec2(sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
-  glm::vec2 targetVec2Neg =
-      glm::vec2(-sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
+  glm::vec2 targetVec2Pos = glm::vec2(sqrt(pow(target.x, 2) + pow(target.z, 2)),
+                                      target.y + shoulderOffset);
+  glm::vec2 targetVec2Neg = glm::vec2(
+      -sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
 
   vector<pair<glm::vec2, glm::vec2>> solutionPairs1, solutionPairs2;
-//    cout << "Vector 2 Positive" << endl;
+  //    cout << "Vector 2 Positive" << endl;
   inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs1);
   inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs2);
 
+  double joint1Angle = glm::degrees(
+      glm::atan(target.z, target.x)); // rotunda rotation about the y
 
-  double joint1Angle =
-      glm::degrees(glm::atan(target.z, target.x)); // rotunda rotation about the y
-    
-//    int i = 0;
+  //    int i = 0;
   // convert all solution pairs into solution triplets yee haw
   for (pair<glm::vec2, glm::vec2> sol : solutionPairs1) {
     jointDegrees3R config;
@@ -816,35 +840,50 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
         glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
     config.elbow =
         glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
-    
-//      cout << i << ":" << endl;
-//      cout << "rotunda: " << config.rotunda << endl;
-//      cout << "shoulder: " << config.shoulder << endl;
-//      cout << "elbow: " << config.elbow << endl;
-//      i++;
+
+    //      cout << i << ":" << endl;
+    //      cout << "rotunda: " << config.rotunda << endl;
+    //      cout << "shoulder: " << config.shoulder << endl;
+    //      cout << "elbow: " << config.elbow << endl;
+    //      i++;
 
     // check if valid within constraints
     // config.elbow -= joint2.getTotalRotation();
-    solutions.push_back(config);
-  }
-    
-    for (pair<glm::vec2, glm::vec2> sol : solutionPairs2) {
-      jointDegrees3R config;
-      config.rotunda = glm::vec3(0, -(joint1Angle + 180), 0);
-      config.shoulder =
-          glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
-      config.elbow =
-          glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
-      
-//        cout << i << ":" << endl;
-//        cout << "rotunda: " << config.rotunda << endl;
-//        cout << "shoulder: " << config.shoulder << endl;
-//        cout << "elbow: " << config.elbow << endl;
-      // check if valid within constraints
-      // config.elbow -= joint2.getTotalRotation();
+    if (config.rotunda.y >= j1->yrange.first &&
+        config.rotunda.y <= j1->yrange.second &&
+        config.shoulder.z >= j1->zrange.first &&
+        config.shoulder.z <= j1->zrange.second &&
+        config.elbow.z >= j2->zrange.first &&
+        config.elbow.z <= j2->zrange.second) {
       solutions.push_back(config);
-//        i++;
     }
+  }
+
+  for (pair<glm::vec2, glm::vec2> sol : solutionPairs2) {
+    jointDegrees3R config;
+    config.rotunda = glm::vec3(0, -(joint1Angle + 180), 0);
+    config.shoulder =
+        glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
+    config.elbow =
+        glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
+
+    //        cout << i << ":" << endl;
+    //        cout << "rotunda: " << config.rotunda << endl;
+    //        cout << "shoulder: " << config.shoulder << endl;
+    //        cout << "elbow: " << config.elbow << endl;
+    // check if valid within constraints
+    // config.elbow -= joint2.getTotalRotation();
+    if (config.rotunda.y >= j1->yrange.first &&
+        config.rotunda.y <= j1->yrange.second &&
+        config.shoulder.z >= j1->zrange.first &&
+        config.shoulder.z <= j1->zrange.second &&
+        config.elbow.z >= j2->zrange.first &&
+        config.elbow.z <= j2->zrange.second) {
+      solutions.push_back(config);
+    }
+
+    //        i++;
+  }
 
   // part of solutions
   //    joint1.rotation = glm::vec3(joint1.rotation.x, -joint1Angle,
@@ -853,11 +892,11 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
 
 // handles solutions for 3R
 void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
-  // we need the absolute value of the solution in solutions to compare against the constraints
-  for (jointDegrees3R sol : solutions) {
-    // process which one falls within the constraints
-    if (sol.rotunda)
-  }
+  // we need the absolute value of the solution in solutions to compare against
+  // the constraints for (jointDegrees3R sol : solutions) {
+  //   // process which one falls within the constraints
+  //   if (sol.rotunda)
+  // }
   // bool found = false;
   // for (pair<glm::vec3, glm::vec3> sol : solutions) {
   //   // if (sol.first.x >= j1->range.first && sol.first.x <= j1->range.second
@@ -866,22 +905,22 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
 
   // }
 
-//  for (auto sol: solutions) {
-//    // pls work pls work
-//    // j2->rotation -= j2->getTotalRotation(); // can get parent if you want to be safe? and not include current rotations
-//
-//    j1->rotation = -sol.rotunda + sol.shoulder;
-//    j2->rotation = +sol.elbow;
-//
-//    // cout << "rotunda: " << sol.rotunda << endl;
-//    // cout << "shoulder: " << sol.shoulder << endl;
-//    // cout << "elbow: " << sol.elbow << endl;
-//    // j1->rotation = -solutions[0].rotunda;
-    // check if it is
-//  }
-    
+  //  for (auto sol: solutions) {
+  //    // pls work pls work
+  //    // j2->rotation -= j2->getTotalRotation(); // can get parent if you want
+  //    to be safe? and not include current rotations
+  //
+  //    j1->rotation = -sol.rotunda + sol.shoulder;
+  //    j2->rotation = +sol.elbow;
+  //
+  //    // cout << "rotunda: " << sol.rotunda << endl;
+  //    // cout << "shoulder: " << sol.shoulder << endl;
+  //    // cout << "elbow: " << sol.elbow << endl;
+  //    // j1->rotation = -solutions[0].rotunda;
+  // check if it is
+  //  }
+
   j1->rotation = solutions[0].rotunda + solutions[0].shoulder;
   j2->rotation = +solutions[0].elbow;
   cout << "end of solutions" << endl;
- 
 }
