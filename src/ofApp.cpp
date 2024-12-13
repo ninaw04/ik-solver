@@ -55,8 +55,14 @@ void ofApp::setup() {
   gui.add(jointX.setup(std::string("0")));
   gui.add(jointY.setup(std::string("0")));
   gui.add(jointZ.setup(std::string("0")));
-  gui.add(minAngle.setup("Min Angle (No label selected)", -180, -180, 180));
-  gui.add(maxAngle.setup("Max Angle (No label selected)", 180, -180, 180));
+//  gui.add(minAngle.setup("Min Angle (No label selected)", -180, -180, 180));
+//  gui.add(maxAngle.setup("Max Angle (No label selected)", 180, -180, 180));
+  gui.add(minx.setup("Min Angle (No label selected)", -180, -180, 180));
+  gui.add(maxx.setup("Max Angle (No label selected)", 180, -180, 180));
+  gui.add(miny.setup("Min Angle (No label selected)", -180, -180, 180));
+  gui.add(maxy.setup("Max Angle (No label selected)", 180, -180, 180));
+  gui.add(minz.setup("Min Angle (No label selected)", -180, -180, 180));
+  gui.add(maxz.setup("Max Angle (No label selected)", 180, -180, 180));
   gui.add(xAxis.setup("X Axis contraint", false));
   gui.add(yAxis.setup("Y Axis contraint", false));
   gui.add(zAxis.setup("Z Axis contraint", false));
@@ -70,6 +76,10 @@ void ofApp::setup() {
 
   // Simple 2 R joint arm solution
   // joints
+  j1->update();
+  j2->update();
+  j3->update();
+  
   j1->addChild(j2);
   j2->addChild(j3);
   j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
@@ -630,7 +640,6 @@ void ofApp::mousePressed(int x, int y, int button) {
     setFirstFrame();
     setKeyFrame();
     bInPlayback = true;
-    cout << "bInPlayback: " << bInPlayback << endl;
     // handleSolutions(solutions);
   }
 
@@ -657,8 +666,21 @@ void ofApp::mousePressed(int x, int y, int button) {
       xAxis = selectedJoint->xConstraint;
       yAxis = selectedJoint->yConstraint;
       zAxis = selectedJoint->zConstraint;
-      minAngle = selectedJoint->range.first;
-      maxAngle = selectedJoint->range.second;
+//      minAngle = selectedJoint->range.first;
+//      maxAngle = selectedJoint->range.second;
+      
+//      selectedJoint->constraints.minx = selectedJoint->xrange.first;
+//      selectedJoint->constraints.maxx = selectedJoint->xrange.second;
+//      selectedJoint->constraints.miny = selectedJoint->yrange.first;
+//      selectedJoint->constraints.maxy = selectedJoint->yrange.second;
+//      selectedJoint->constraints.minz = selectedJoint->zrange.first;
+//      selectedJoint->constraints.maxz = selectedJoint->zrange.second;
+      minx = selectedJoint->xrange.first;
+      maxx = selectedJoint->xrange.second;
+      miny = selectedJoint->yrange.first;
+      maxy = selectedJoint->yrange.second;
+      minz = selectedJoint->zrange.first;
+      maxz = selectedJoint->zrange.second;
     }
   } else {
     selected.clear();
@@ -829,13 +851,13 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
   //    joint1.rotation.z); // change z to rotate
 }
 
+// handles solutions for 3R
 void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
   // we need the absolute value of the solution in solutions to compare against the constraints
-
-  //    for (pair sol : solutions) {
-  //        // process which one falls within the constraints
-  //
-  // }
+  for (jointDegrees3R sol : solutions) {
+    // process which one falls within the constraints
+    if (sol.rotunda)
+  }
   // bool found = false;
   // for (pair<glm::vec3, glm::vec3> sol : solutions) {
   //   // if (sol.first.x >= j1->range.first && sol.first.x <= j1->range.second
@@ -844,7 +866,6 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
 
   // }
 
-  // then we subtract the parent rotation to get the joint's relative rotation here
 //  for (auto sol: solutions) {
 //    // pls work pls work
 //    // j2->rotation -= j2->getTotalRotation(); // can get parent if you want to be safe? and not include current rotations
@@ -856,10 +877,11 @@ void ofApp::handleSolutions(vector<jointDegrees3R> &solutions) {
 //    // cout << "shoulder: " << sol.shoulder << endl;
 //    // cout << "elbow: " << sol.elbow << endl;
 //    // j1->rotation = -solutions[0].rotunda;
+    // check if it is
 //  }
     
-    j1->rotation = solutions[0].rotunda + solutions[0].shoulder;
-    j2->rotation = +solutions[0].elbow;
+  j1->rotation = solutions[0].rotunda + solutions[0].shoulder;
+  j2->rotation = +solutions[0].elbow;
   cout << "end of solutions" << endl;
  
 }

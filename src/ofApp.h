@@ -107,8 +107,12 @@ class ofApp : public ofBaseApp{
         ofxLabel jointY;
         ofxLabel jointZ;
 
-        ofxFloatSlider minAngle;
-        ofxFloatSlider maxAngle;
+        ofxFloatSlider minx;
+        ofxFloatSlider maxx;
+        ofxFloatSlider miny;
+        ofxFloatSlider maxy;
+        ofxFloatSlider minz;
+        ofxFloatSlider maxz;
         ofxToggle xAxis;
         ofxToggle yAxis;
         ofxToggle zAxis;
