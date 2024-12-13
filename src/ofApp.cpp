@@ -58,9 +58,9 @@ void ofApp::setup() {
   gui.add(maxy.setup("Max y Angle (No label selected)", 180, -180, 180));
   gui.add(minz.setup("Min z Angle (No label selected)", 0, 0, 180));
   gui.add(maxz.setup("Max z Angle (No label selected)", 180, -180, 180));
-  gui.add(xAxis.setup("X Axis contraint", false));
-  gui.add(yAxis.setup("Y Axis contraint", false));
-  gui.add(zAxis.setup("Z Axis contraint", false));
+//  gui.add(xAxis.setup("X Axis contraint", false));
+//  gui.add(yAxis.setup("Y Axis contraint", false));
+//  gui.add(zAxis.setup("Z Axis contraint", false));
   
   font.load("fonts/ArgakaFashion-Regular.otf", 24);
   displaySolution = -1;
@@ -152,7 +152,6 @@ void ofApp::draw() {
   ofScale(0.07, 0.07);
   font.drawString("Displaying", -70, 160);
   font.drawString("Solution: " + to_string(displaySolution), -70, 130);
-  cout << "solution: " << displaySolution << endl;
   ofPopMatrix();
   
 
@@ -190,9 +189,9 @@ void ofApp::draw() {
     jointX = "Rotation X: " + std::to_string(rotationValue.x);
     jointY = "Rotation Y: " + std::to_string(rotationValue.y);
     jointZ = "Rotation Z: " + std::to_string(rotationValue.z);
-    selectedJoint->xConstraint = xAxis;
-    selectedJoint->yConstraint = yAxis;
-    selectedJoint->zConstraint = zAxis;
+//    selectedJoint->xConstraint = xAxis;
+//    selectedJoint->yConstraint = yAxis;
+//    selectedJoint->zConstraint = zAxis;
     // selectedJoint->range.first = minAngle;
     // selectedJoint->range.second = maxAngle;
 
@@ -693,11 +692,19 @@ void ofApp::mousePressed(int x, int y, int button) {
     mouseToDragPlane(x, y, lastPoint);
     if (objSelected() && dynamic_cast<Joint *>(selected[0]) != nullptr) {
       Joint *selectedJoint = dynamic_cast<Joint *>(selected[0]);
-      xAxis = selectedJoint->xConstraint;
-      yAxis = selectedJoint->yConstraint;
-      zAxis = selectedJoint->zConstraint;
+//      xAxis = selectedJoint->xConstraint;
+//      yAxis = selectedJoint->yConstraint;
+//      zAxis = selectedJoint->zConstraint;
       //      minAngle = selectedJoint->range.first;
       //      maxAngle = selectedJoint->range.second;
+//      minx = selectedJoint->xrange.first;
+//      maxx = selectedJoint->xrange.second;
+      // setting the constraints to object constraints
+      miny = selectedJoint->yrange.first;
+      maxy = selectedJoint->yrange.second;
+      minz = selectedJoint->zrange.first;
+      maxz = selectedJoint->zrange.second;
+      
 
       selectedJoint->constraints.minx = selectedJoint->xrange.first;
       selectedJoint->constraints.maxx = selectedJoint->xrange.second;
