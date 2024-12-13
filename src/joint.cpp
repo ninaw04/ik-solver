@@ -48,12 +48,13 @@ void Joint::draw() {
         ofPopMatrix();
     }
 }
-void Joint::addModel(std::string file, glm::vec3 position) {
+
+void Joint::addModel(std::string file, glm::vec3 position, float scale) {
   boneModel.load(file);
 
   bonePos = position;
   boneModel.setPosition(position.x, position.y, position.z);
-  boneModel.setScale(0.008, 0.008, 0.008);
+  boneModel.setScale(scale, scale, scale);
   cout << "created " << file << endl;
 }
 
