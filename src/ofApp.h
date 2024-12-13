@@ -68,9 +68,11 @@ public:
   void inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
                    Joint &joint3, vector<jointDegrees3R> &solutions);
   void handleSolutions(vector<jointDegrees3R> &solutions);
+
   // Lights
   //
   ofLight light1;
+  ofLight light2;
 
   // Cameras
   //
@@ -117,6 +119,7 @@ public:
   Joint *j1 = new Joint();
   Joint *j2 = new Joint();
   Joint *j3 = new Joint();
+  Joint *j4 = new Joint();
   // Joint *j4 = new Joint(glm::vec3(1, 1, 0), "j4");
   // j3->setPosition(glm::vec3(0,2,0));
 
@@ -197,12 +200,13 @@ public:
   // this "cycles" until you call resetKeyFrames();
   //
   void setKeyFrame(int index) {
-    int solIndex = index % solutions.size();
-    displaySolution = solIndex;
+    
     key1.frame = frameBegin;
     key2.frame = frameEnd;
     cout << solutions.size() << endl;
     if (solutions.size() > 0) {
+      int solIndex = index % solutions.size();
+      displaySolution = solIndex;
 //      key1.configRotations = {.rotunda = glm::vec3(0, j1->rotation.y, 0),
 //                              .shoulder = glm::vec3(0, 0, j1->rotation.z),
 //                              .elbow = glm::vec3(0, 0, j2->rotation.z)};

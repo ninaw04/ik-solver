@@ -42,6 +42,11 @@ void ofApp::setup() {
   light1.setPosition(5, 5, 0);
   light1.setDiffuseColor(ofColor(255.f, 255.f, 255.f));
   light1.setSpecularColor(ofColor(255.f, 255.f, 255.f));
+  
+  light2.enable();
+  light2.setPosition(0, 60, 40);
+  light2.setDiffuseColor(ofColor(200.f, 200.f, 200.f));
+  light2.setSpecularColor(ofColor(255.f, 255.f, 255.f));
 
   theCam = &mainCam;
 
@@ -52,10 +57,10 @@ void ofApp::setup() {
   gui.add(jointX.setup(std::string("0")));
   gui.add(jointY.setup(std::string("0")));
   gui.add(jointZ.setup(std::string("0")));
-  gui.add(miny.setup("Min y Angle (No label selected)", 0, 0, 180));
-  gui.add(maxy.setup("Max y Angle (No label selected)", 180, -180, 180));
-  gui.add(minz.setup("Min z Angle (No label selected)", 0, 0, 180));
-  gui.add(maxz.setup("Max z Angle (No label selected)", 180, -180, 180));
+  gui.add(miny.setup("Min y Angle", 0, 0, 180));
+  gui.add(maxy.setup("Max y Angle", 180, -180, 180));
+  gui.add(minz.setup("Min z Angle", 0, 0, 180));
+  gui.add(maxz.setup("Max z Angle", 180, -180, 180));
   
   font.load("fonts/ArgakaFashion-Regular.otf", 24);
   displaySolution = -1;
@@ -67,19 +72,22 @@ void ofApp::setup() {
   //
   scene.push_back(new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0),
                             ofColor::darkOrchid));
+  
+//  scene.push_back(new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0),
+//                            ofColor::black));
 
-  // Simple 2 R joint arm solution
-  // joints
+  // Simple 2 R joint arm solution// joints
   j1->addChild(j2);
   j2->addChild(j3);
+  j3->addChild(j4);
   j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
   j2->addModel("test1/elbow7.obj", glm::vec3(0, 0, 0));
 
   j1->setPosition(glm::vec3(0, 0, 0));
   j2->setPosition(glm::vec3(4, 0, 0));
   j3->setPosition(glm::vec3(8, 0, 0));
-  //  Joint *j2 = new Joint(glm::vec3(0.1, 2, 0), "j2");
-  //  Joint *j3 = new Joint(glm::vec3(2, 2, 2), "j3");
+  j4->setPosition(glm::vec3(2, 0, 0));
+  j3->addModel("endeffector/endeffector.obj", glm::vec3(0, 3, 0), 0.004);
 
   // j3->addChild(j4);
 
@@ -606,6 +614,9 @@ void ofApp::mousePressed(int x, int y, int button) {
 
     // animation
     setFirstFrame();
+//    if (index == 0) {
+//      return;
+//    }
     setKeyFrame(index);
     bInPlayback = true;
   }

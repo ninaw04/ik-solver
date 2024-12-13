@@ -35,7 +35,7 @@ public:
 
     void draw() override;
 //    void update();
-    void addModel(std::string fileName, glm::vec3 position);
+  void addModel(std::string fileName, glm::vec3 position, float scale = 0.008);
   
     // delete function
     // add a range for x, y, z constraints per joint
