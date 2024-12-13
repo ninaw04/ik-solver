@@ -109,9 +109,6 @@ public:
   ofxFloatSlider maxy;
   ofxFloatSlider minz;
   ofxFloatSlider maxz;
-//  ofxToggle xAxis;
-//  ofxToggle yAxis;
-//  ofxToggle zAxis;
   
   ofTrueTypeFont font;
   int displaySolution;

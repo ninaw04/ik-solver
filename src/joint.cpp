@@ -11,15 +11,6 @@
 
 int Joint::jointInstances = 0;
 
-//void Joint::update() {
-//    constraints.maxx = 180;
-//    constraints.maxy = 180;
-//    constraints.maxz = 180;
-//    constraints.minx = -180;
-//    constraints.miny = -180;
-//    constraints.minz = -180;
-//}
-
 void Joint::draw() {
     glm::mat4 m = getMatrix();
 

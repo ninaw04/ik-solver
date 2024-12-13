@@ -39,7 +39,6 @@ public:
   
     // delete function
     // add a range for x, y, z constraints per joint
-//    std::pair<int, int> range = {-360, 360};
   std::pair<int, int> xrange = {-360, 360};
   std::pair<int, int> yrange = {-360, 360};
   std::pair<int, int> zrange = {-360, 360};
