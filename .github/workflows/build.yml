@@ -12,27 +12,26 @@ jobs:
 
     steps:
       - name: Checkout repository
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
     
       - name: Install dependencies
         run: |
-            sudo apt-get update
-            sudo apt-get install -y libglfw3-dev libglm-dev libglew-dev libfreetype6-dev libboost-filesystem-dev libboost-system-dev
+          sudo apt-get update
+          sudo apt-get install -y libglfw3-dev libglm-dev libglew-dev libfreetype6-dev libboost-filesystem-dev libboost-system-dev
       
       - name: Set up OpenFrameworks
         run: |
-            git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
-            cd ~/openFrameworks/scripts/linux
-            ./install_dependencies.sh
-            ./compileOF.sh
+          git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
+          cd ~/openFrameworks/scripts/linux
+          ./install_dependencies.sh
+          ./compileOF.sh
   
       - name: Build project
         run: |
-            cd ~/openFrameworks/apps/myApps/
-            ln -s $GITHUB_WORKSPACE ik-solver  # Link the GitHub workspace to OpenFrameworks
-            cd ik-solver
-            make
-
+          cd ~/openFrameworks/apps/myApps/
+          ln -s $GITHUB_WORKSPACE ik-solver  # Link the GitHub workspace to OpenFrameworks
+          cd ik-solver
+          make
 
   build_mac:
     runs-on: macos-latest
@@ -59,7 +58,6 @@ jobs:
           ln -s $GITHUB_WORKSPACE ik-solver  # Link GitHub workspace to OpenFrameworks
           cd ik-solver
           make
-
 
   build_windows:
     runs-on: windows-latest
