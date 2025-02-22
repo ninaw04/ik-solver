@@ -2,7 +2,9 @@ name: 🚀 CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+      - workflow-debug
   pull_request:
     branches: [ "main" ]
 
