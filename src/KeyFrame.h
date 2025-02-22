@@ -31,7 +31,7 @@ public:
                                  .shoulder = glm::vec3(0, 0, 0),
                                  .elbow = glm::vec3(0, 0, 0) };
 
-    void update(Joint* j1, Joint* j2);
+    void update(shared_ptr<Joint> j1, shared_ptr<Joint> j2);
     void setFirstFrame();
     void nextFrame();
     void prevFrame();
@@ -43,7 +43,7 @@ public:
     float ease(float x);
     glm::vec3 mapVec(float val, float start, float end, glm::vec3 const& outStart, glm::vec3 const& outEnd);
     glm::vec3 mapVec(glm::vec3 const& val, glm::vec3 const& start, glm::vec3 const& end, glm::vec3 const& outStart, glm::vec3 const& outEnd);
-    void setKeyFrame(int index, std::vector<jointDegrees3R>& solutions, int& displaySolution, Joint* j1, Joint* j2);
+    void setKeyFrame(int index, std::vector<jointDegrees3R>& solutions, int& displaySolution);
     void resetKeyFrames();
 
     

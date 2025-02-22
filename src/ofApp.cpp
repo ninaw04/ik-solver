@@ -71,8 +71,9 @@ void ofApp::setup()
 
   // ground plane
   //
-  scene.push_back(
-    new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0), ofColor::darkOrchid));
+  scene.reserve(4);
+  scene.emplace_back(
+    make_shared<Plane>(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0), ofColor::darkOrchid));
 
   // Simple 2 R joint arm solution
   j1->addChild(j2);
@@ -87,9 +88,9 @@ void ofApp::setup()
   j4->setPosition(glm::vec3(2, 0, 0));
   j3->addModel("arm-assets/endeffector.obj", glm::vec3(0, 3, 0), 0.004);
 
-  scene.push_back(j1);
-  scene.push_back(j2);
-  scene.push_back(j3);
+  scene.emplace_back(j1);
+  scene.emplace_back(j2);
+  scene.emplace_back(j3);
 }
 
 void ofApp::update()
@@ -135,9 +136,9 @@ void ofApp::draw()
 
   //  Joint GUI
   ofDisableDepthTest();
-  if (objSelected() && dynamic_cast<Joint*>(selected[0]) != nullptr) {
-    Joint* selectedJoint = dynamic_cast<Joint*>(selected[0]);
-
+  if (objSelected() && dynamic_pointer_cast<Joint>(selected[0]) != nullptr) {
+    shared_ptr<Joint> selectedJoint = dynamic_pointer_cast<Joint>(selected[0]);
+    
     auto rotationValue = selected[0]->rotation;
     jointName = "Joint Name: " + selectedJoint->name;
     jointX = "Rotation X: " + std::to_string(rotationValue.x);
@@ -186,7 +187,7 @@ void ofApp::drawAxis(glm::mat4 m, float len)
 
 // print C++ code for obj tranformation channels. (for debugging);
 //
-void ofApp::printChannels(SceneObject* obj)
+void ofApp::printChannels(shared_ptr<SceneObject> obj)
 {
   cout << "position = glm::vec3(" << obj->position.x << "," << obj->position.y
        << "," << obj->position.z << ");" << endl;
@@ -208,7 +209,7 @@ void ofApp::saveToFile()
   for (auto obj : scene) {
     // create -joint “joint name” -rotate “<x, y, z>” -translate “<x, y, z>”
     // -parent “name”;
-    if (Joint* jointObj = dynamic_cast<Joint*>(obj)) {
+    if(shared_ptr<Joint> jointObj = dynamic_pointer_cast<Joint>(obj)) {
       char jointBuf[256];
       // if is root, just don't include parent
       if (jointObj->parent == NULL) {
@@ -273,8 +274,6 @@ void ofApp::readSkeleton(ofFile skelly)
       glm::vec3 tran;
       string parentName;
 
-      cout << "hello???" << endl;
-
       // create
       getline(ss, token, delimiter);
       if (token == "create") {
@@ -323,7 +322,7 @@ void ofApp::readSkeleton(ofFile skelly)
       }
 
       // add rotation
-      Joint* curr = new Joint(tran, jointName);
+      std::shared_ptr<Joint> curr = std::make_shared<Joint>(tran, jointName);
       curr->rotation = rot;
 
       // find parent
@@ -394,11 +393,11 @@ void ofApp::keyPressed(int key)
     case 'i':
       break;
     case 'j': {
-      Joint* joint = new Joint(glm::vec3(1, 1, 1));
+      shared_ptr<Joint> joint = make_shared<Joint>(glm::vec3(1, 1, 1));
 
       // when selected
       if (objSelected()) {
-        if (Joint* selectedJoint = dynamic_cast<Joint*>(selected[0])) {
+        if (shared_ptr<Joint> selectedJoint = dynamic_pointer_cast<Joint>(selected[0])) {
           selectedJoint->addChild(joint);
         }
       }
@@ -420,7 +419,7 @@ void ofApp::keyPressed(int key)
       index++;
       keyFrameManager.resetKeyFrames();
       keyFrameManager.setFirstFrame();
-      keyFrameManager.setKeyFrame(index, solutions, displaySolution, j1, j2);
+      keyFrameManager.setKeyFrame(index, solutions, displaySolution);
       break;
     case ' ':
       keyFrameManager.bInPlayback = !keyFrameManager.bInPlayback;
@@ -458,7 +457,7 @@ void ofApp::keyPressed(int key)
     case OF_KEY_BACKSPACE: {
       if (objSelected()) {
 
-        if (Joint* selectedJoint = dynamic_cast<Joint*>(selected[0])) {
+        if (shared_ptr<Joint> selectedJoint = dynamic_pointer_cast<Joint>(selected[0])) {
           if (selectedJoint->parent == NULL) {
             // remove the whole tree?
           } else {
@@ -477,13 +476,12 @@ void ofApp::keyPressed(int key)
               siblings.end());
             selectedJoint->parent = NULL;
 
-            SceneObject* tribute = selected[0];
+            shared_ptr<SceneObject> tribute = selected[0];
             scene.erase(std::remove(scene.begin(), scene.end(), tribute),
                         scene.end());
             selected.erase(
               std::remove(selected.begin(), selected.end(), tribute),
               selected.end());
-            delete tribute;
           }
         }
       }
@@ -540,96 +538,94 @@ bool ofApp::mouseToDragPlane(int x, int y, glm::vec3& point)
 //
 void ofApp::mousePressed(int x, int y, int button)
 {
+    // if we are moving the camera around, don't allow selection
+    if (mainCam.getMouseInputEnabled())
+        return;
 
-  // if we are moving the camera around, don't allow selection
-  //
-  if (mainCam.getMouseInputEnabled())
-    return;
-
-  // clear selection list
-  //
-  selected.clear();
-
-  //
-  // test if something selected
-  //
-  vector<SceneObject*> hits;
-
-  glm::vec3 p = theCam->screenToWorld(glm::vec3(x, y, 0));
-  glm::vec3 d = p - theCam->getPosition();
-  glm::vec3 dn = glm::normalize(d);
-
-  // check for selection of scene objects
-  //
-  glm::vec3 worldPoint;
-  mouseToDragPlane(x, y, worldPoint);
-  bool itemIntersected = false;
-  for (int i = 0; i < scene.size(); i++) {
-
-    glm::vec3 point, norm;
-
-    //  We hit an object
-    //
-    if (scene[i]->isSelectable &&
-        scene[i]->intersect(Ray(p, dn), point, norm)) {
-      hits.push_back(scene[i]);
-      itemIntersected = true;
-    }
-  }
-
-  if (!itemIntersected) {
-    keyFrameManager.startConfig = { .rotunda = glm::vec3(0, j1->rotation.y, 0),
-                    .shoulder = glm::vec3(0, 0, j1->rotation.z),
-                    .elbow = glm::vec3(0, 0, j2->rotation.z) };
-    keyFrameManager.resetKeyFrames();
-    WORLDPOINT = worldPoint;
-    solutions.clear();
-
-    inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
-
-    // animation
-    keyFrameManager.setFirstFrame();
-    keyFrameManager.setKeyFrame(index, solutions, displaySolution, j1, j2);
-    keyFrameManager.bInPlayback = true;
-  }
-
-  // if we selected more than one, pick nearest
-  //
-  SceneObject* selectedObj = NULL;
-  if (hits.size() > 0) {
-    selectedObj = hits[0];
-    float nearestDist = std::numeric_limits<float>::infinity();
-    for (int n = 0; n < hits.size(); n++) {
-      float dist = glm::length(hits[n]->position - theCam->getPosition());
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        selectedObj = hits[n];
-      }
-    }
-  }
-  if (selectedObj) {
-    selected.push_back(selectedObj);
-    bDrag = true;
-    mouseToDragPlane(x, y, lastPoint);
-    if (objSelected() && dynamic_cast<Joint*>(selected[0]) != nullptr) {
-      Joint* selectedJoint = dynamic_cast<Joint*>(selected[0]);
-      // setting initial slider constraints to object constraints
-      miny = selectedJoint->yrange.first;
-      maxy = selectedJoint->yrange.second;
-      minz = selectedJoint->zrange.first;
-      maxz = selectedJoint->zrange.second;
-
-      // now allowing user to set slider constraints
-      selectedJoint->constraints.minx = selectedJoint->xrange.first;
-      selectedJoint->constraints.maxx = selectedJoint->xrange.second;
-      selectedJoint->constraints.miny = selectedJoint->yrange.first;
-      selectedJoint->constraints.maxy = selectedJoint->yrange.second;
-      selectedJoint->constraints.minz = selectedJoint->zrange.first;
-      selectedJoint->constraints.maxz = selectedJoint->zrange.second;
-    }
-  } else {
+    // clear selection list
     selected.clear();
-  }
+
+    // list of intersected objects
+    std::vector<std::shared_ptr<SceneObject>> hits;
+
+    glm::vec3 p = theCam->screenToWorld(glm::vec3(x, y, 0));
+    glm::vec3 d = p - theCam->getPosition();
+    glm::vec3 dn = glm::normalize(d);
+
+    // check for selection of scene objects
+    glm::vec3 worldPoint;
+    mouseToDragPlane(x, y, worldPoint);
+    bool itemIntersected = false;
+
+    for (const auto& obj : scene) {
+        glm::vec3 point, norm;
+
+        // We hit an object
+        if (obj->isSelectable && obj->intersect(Ray(p, dn), point, norm)) {
+            hits.push_back(obj);
+            itemIntersected = true;
+        }
+    }
+
+    if (!itemIntersected) {
+        keyFrameManager.startConfig = {
+            .rotunda = glm::vec3(0, j1->rotation.y, 0),
+            .shoulder = glm::vec3(0, 0, j1->rotation.z),
+            .elbow = glm::vec3(0, 0, j2->rotation.z)
+        };
+        keyFrameManager.resetKeyFrames();
+        WORLDPOINT = worldPoint;
+        solutions.clear();
+
+        inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
+
+        // animation
+        keyFrameManager.setFirstFrame();
+        keyFrameManager.setKeyFrame(index, solutions, displaySolution);
+        keyFrameManager.bInPlayback = true;
+    }
+
+    // if we selected more than one, pick nearest
+    std::shared_ptr<SceneObject> selectedObj = nullptr;
+    if (!hits.empty()) {
+        selectedObj = hits[0];
+        float nearestDist = std::numeric_limits<float>::infinity();
+
+        for (const auto& obj : hits) {
+            float dist = glm::length(obj->position - theCam->getPosition());
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                selectedObj = obj;
+            }
+        }
+    }
+
+    if (selectedObj) {
+        selected.push_back(selectedObj);
+        bDrag = true;
+        mouseToDragPlane(x, y, lastPoint);
+
+        if (objSelected()) {
+            auto selectedJoint = std::dynamic_pointer_cast<Joint>(selected[0]);
+            if (selectedJoint) {
+                // setting initial slider constraints to object constraints
+                miny = selectedJoint->yrange.first;
+                maxy = selectedJoint->yrange.second;
+                minz = selectedJoint->zrange.first;
+                maxz = selectedJoint->zrange.second;
+
+                // now allowing user to set slider constraints
+                selectedJoint->constraints.minx = selectedJoint->xrange.first;
+                selectedJoint->constraints.maxx = selectedJoint->xrange.second;
+                selectedJoint->constraints.miny = selectedJoint->yrange.first;
+                selectedJoint->constraints.maxy = selectedJoint->yrange.second;
+                selectedJoint->constraints.minz = selectedJoint->zrange.first;
+                selectedJoint->constraints.maxz = selectedJoint->zrange.second;
+            }
+        }
+    } else {
+        selected.clear();
+    }
 }
 
 //--------------------------------------------------------------
@@ -707,7 +703,7 @@ void ofApp::inverseKin2(glm::vec2 target,
     rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
     rot2 = glm::degrees(glm::vec2(0, PI));
     solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and target == glm::vec2(0, 0)) {  // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
+  } else if (c2 == -1 and target == glm::vec2(0, 0)) {  // return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
     // as long as q2 is pi, q1 can be anything, we are returning the original
     // joint rotation
     rot1 = joint1.rotation;                 // (q1)
@@ -749,47 +745,35 @@ void ofApp::inverseKin3(glm::vec3 target,
   glm::vec2 targetVec2Pos = glm::vec2(sqrt(pow(target.x, 2) + pow(target.z, 2)),
                                       target.y + shoulderOffset);
   glm::vec2 targetVec2Neg = glm::vec2(
-    -sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
-
+                                      -sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
+  
   vector<pair<glm::vec2, glm::vec2>> solutionPairs1, solutionPairs2;
   inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs1);
   inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs2);
-
+  
   double joint1Angle = glm::degrees(
-    glm::atan(target.z, target.x));  // rotunda rotation about the y
-
+                                    glm::atan(target.z, target.x));  // rotunda rotation about the y
+  
   // convert all solution pairs into solution triplets
-  for (pair<glm::vec2, glm::vec2> sol : solutionPairs1) {
-    jointDegrees3R config;
-    config.rotunda = glm::vec3(0, -joint1Angle, 0);
-    config.shoulder = glm::vec3(sol.first[0], 0, sol.first[1]);  // y and z are flipped
-    config.elbow = glm::vec3(sol.second[0], 0, sol.second[1]);  // y and z are flipped
-
-    // check if valid within constraints
-    if (config.rotunda.y >= j1->yrange.first &&
-        config.rotunda.y <= j1->yrange.second &&
-        config.shoulder.z >= j1->zrange.first &&
-        config.shoulder.z <= j1->zrange.second &&
-        config.elbow.z >= j2->zrange.first &&
-        config.elbow.z <= j2->zrange.second) {
-      solutions.push_back(config);
-    }
-  }
-
-  for (pair<glm::vec2, glm::vec2> sol : solutionPairs2) {
-    jointDegrees3R config;
-    config.rotunda = glm::vec3(0, -(joint1Angle + 180), 0);
-    config.shoulder = glm::vec3(sol.first[0], 0, sol.first[1]);  // y and z are flipped
-    config.elbow = glm::vec3(sol.second[0], 0, sol.second[1]);  // y and z are flipped
-
-    // check if valid within constraints
-    if (config.rotunda.y >= j1->yrange.first &&
-        config.rotunda.y <= j1->yrange.second &&
-        config.shoulder.z >= j1->zrange.first &&
-        config.shoulder.z <= j1->zrange.second &&
-        config.elbow.z >= j2->zrange.first &&
-        config.elbow.z <= j2->zrange.second) {
-      solutions.push_back(config);
+  for (int i = 0; i < 2; i++) {
+    float offset = (i == 0) ? 0 : 180;
+    auto& solutionPairs = (i == 0) ? solutionPairs1 : solutionPairs2;
+    
+    for (const auto& sol : solutionPairs) {
+      jointDegrees3R config;
+      config.rotunda = glm::vec3(0, -(joint1Angle + offset), 0);
+      config.shoulder = glm::vec3(sol.first[0], 0, sol.first[1]);  // y and z are flipped
+      config.elbow = glm::vec3(sol.second[0], 0, sol.second[1]);  // y and z are flipped
+      
+      // check if valid within constraints
+      if (config.rotunda.y >= j1->yrange.first &&
+          config.rotunda.y <= j1->yrange.second &&
+          config.shoulder.z >= j1->zrange.first &&
+          config.shoulder.z <= j1->zrange.second &&
+          config.elbow.z >= j2->zrange.first &&
+          config.elbow.z <= j2->zrange.second) {
+        solutions.push_back(config);
+      }
     }
   }
 }

@@ -49,7 +49,7 @@ public:
   void gotMessage(ofMessage msg);
   static void drawAxis(glm::mat4 transform = glm::mat4(1.0), float len = 1.0);
   bool mouseToDragPlane(int x, int y, glm::vec3& point);
-  void printChannels(SceneObject*);
+  void printChannels(shared_ptr<SceneObject> obj);
   bool objSelected()
   {
     return (selected.size() ? true : false);
@@ -87,8 +87,7 @@ public:
 
   // scene components
   //
-  vector<SceneObject*> scene;
-  vector<SceneObject*> selected;
+  vector<shared_ptr<SceneObject>> scene, selected;
   ofPlanePrimitive plane;
 
   // state
@@ -116,10 +115,10 @@ public:
   int displaySolution;
 
   // ARM
-  Joint* j1 = new Joint();
-  Joint* j2 = new Joint();
-  Joint* j3 = new Joint();
-  Joint* j4 = new Joint();
+  shared_ptr<Joint> j1 = make_shared<Joint>();
+  shared_ptr<Joint> j2 = make_shared<Joint>();
+  shared_ptr<Joint> j3 = make_shared<Joint>();
+  shared_ptr<Joint> j4 = make_shared<Joint>();
 
   // OUTPUT
   int index = 0;

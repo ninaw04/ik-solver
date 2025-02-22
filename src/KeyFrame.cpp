@@ -1,7 +1,7 @@
 #include "KeyFrame.h"
 #include "ofMain.h"
 
-void KeyFrameManager::update(Joint* j1, Joint* j2)
+void KeyFrameManager::update(shared_ptr<Joint> j1, shared_ptr<Joint> j2)
 {
     if (bInPlayback) {
         nextFrame();
@@ -90,7 +90,7 @@ glm::vec3 KeyFrameManager::mapVec(glm::vec3 const& val, glm::vec3 const& start, 
                      ofMap(val.z, start.z, end.z, outStart.z, outEnd.z));
 }
 
-void KeyFrameManager::setKeyFrame(int index, std::vector<jointDegrees3R>& solutions, int& displaySolution, Joint* j1, Joint* j2)
+void KeyFrameManager::setKeyFrame(int index, std::vector<jointDegrees3R>& solutions, int& displaySolution)
 {
     key1.frame = frameBegin;
     key2.frame = frameEnd;

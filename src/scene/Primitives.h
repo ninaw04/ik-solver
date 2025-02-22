@@ -28,113 +28,89 @@ public:
 
 //  Base class for any renderable object in the scene
 //
-class SceneObject {
+class SceneObject : public std::enable_shared_from_this<SceneObject> {
 public:
-    virtual ~SceneObject() = default;
-	virtual void draw() = 0;    // pure virtual funcs - must be overloaded
-	virtual bool intersect(const Ray &ray, glm::vec3 &point, glm::vec3 &normal) { return false; }
+    virtual ~SceneObject() = default;  // Virtual destructor for proper cleanup
+    virtual void draw() = 0;    // pure virtual funcs - must be overloaded
+    virtual bool intersect(const Ray &ray, glm::vec3 &point, glm::vec3 &normal) { return false; }
 
-	// commonly used transformations
-	//
-	glm::mat4 getRotateMatrix() {
-		return (glm::eulerAngleYXZ(glm::radians(rotation.y), glm::radians(rotation.x), glm::radians(rotation.z)));   // yaw, pitch, roll 
-	}
-	glm::mat4 getTranslateMatrix() {
-		return (glm::translate(glm::mat4(1.0), glm::vec3(position.x, position.y, position.z)));
-	}
-	glm::mat4 getScaleMatrix() {
-		return (glm::scale(glm::mat4(1.0), glm::vec3(scale.x, scale.y, scale.z)));
-	}
-
-
-	glm::mat4 getLocalMatrix() {
-
-		// get the local transformations + pivot
-		//
-		glm::mat4 scale = getScaleMatrix();
-		glm::mat4 rotate = getRotateMatrix();
-		glm::mat4 trans = getTranslateMatrix();
-
-		// handle pivot point  (rotate around a point that is not the object's center)
-		//
-		glm::mat4 pre = glm::translate(glm::mat4(1.0), glm::vec3(-pivot.x, -pivot.y, -pivot.z));
-		glm::mat4 post = glm::translate(glm::mat4(1.0), glm::vec3(pivot.x, pivot.y, pivot.z));
-
-	
-
-	    return (trans * post * rotate * pre * scale);
-  }
-  glm::vec3 getTotalRotation() {
-    if (parent) {
-      auto parentRotation = parent->getTotalRotation();
-      return (parentRotation + rotation);
-    } else {
-      return (rotation);
+    glm::mat4 getRotateMatrix() {
+        return (glm::eulerAngleYXZ(glm::radians(rotation.y), glm::radians(rotation.x), glm::radians(rotation.z))); // yaw, pitch, roll
     }
-  }
 
+    glm::mat4 getTranslateMatrix() {
+        return (glm::translate(glm::mat4(1.0), glm::vec3(position.x, position.y, position.z)));
+    }
 
-	glm::mat4 getMatrix() {
+    glm::mat4 getScaleMatrix() {
+        return (glm::scale(glm::mat4(1.0), glm::vec3(scale.x, scale.y, scale.z)));
+    }
 
-          // if we have a parent (we are not the root),
-          // concatenate parent's transform (this is recursive)
-          //
-		if (parent) {
-			glm::mat4 M = parent->getMatrix();
-			return (M * getLocalMatrix());
-                }
+    glm::mat4 getLocalMatrix() {
+        // get the local transformations + pivot
+        glm::mat4 scale = getScaleMatrix();
+        glm::mat4 rotate = getRotateMatrix();
+        glm::mat4 trans = getTranslateMatrix();
+
+        // handle pivot point (rotate around a point that is not the object's center)
+        glm::mat4 pre = glm::translate(glm::mat4(1.0), glm::vec3(-pivot.x, -pivot.y, -pivot.z));
+        glm::mat4 post = glm::translate(glm::mat4(1.0), glm::vec3(pivot.x, pivot.y, pivot.z));
+
+        return (trans * post * rotate * pre * scale);
+    }
+
+    glm::vec3 getTotalRotation() {
+        if (parent) {
+            auto parentRotation = parent->getTotalRotation();
+            return (parentRotation + rotation);
+        } else {
+            return (rotation);
+        }
+    }
+
+    glm::mat4 getMatrix() {
+        if (parent) {
+            glm::mat4 M = parent->getMatrix();
+            return (M * getLocalMatrix());
+        }
+        return getLocalMatrix();  // priority order is SRT
+    }
+
+    glm::vec3 getPosition() {
+        return (getMatrix() * glm::vec4(0.0, 0.0, 0.0, 1.0));
+    }
+
+    void setPosition(glm::vec3 pos) {
+        position = glm::inverse(getMatrix()) * glm::vec4(pos, 1.0);
+    }
   
-		else return getLocalMatrix();  // priority order is SRT
-		
+    // return a rotation  matrix that rotates one vector to another
+    //
+    glm::mat4 rotateToVector(glm::vec3 v1, glm::vec3 v2);
 
-		// return getLocalMatrix();
-	}
+    // Hierarchy methods with shared_ptr
+    void addChild(std::shared_ptr<SceneObject> child) {
+        childList.push_back(child);
+        child->parent = shared_from_this();  // Set parent using shared_ptr
+    }
 
-	// get current Position in World Space
-	//
-	glm::vec3 getPosition() {
-		return (getMatrix() * glm::vec4(0.0, 0.0, 0.0, 1.0));
-	}
+    std::shared_ptr<SceneObject> parent = nullptr;
+    std::vector<std::shared_ptr<SceneObject>> childList;
 
-	// set position (pos is in world space)
-	//
-	void setPosition(glm::vec3 pos) {
-		position = glm::inverse(getMatrix()) * glm::vec4(pos, 1.0);
-	}
+    // Transformation properties
+    glm::vec3 position = glm::vec3(0, 0, 0);  // translate
+    glm::vec3 rotation = glm::vec3(0, 0, 0);  // rotate
+    glm::vec3 scale = glm::vec3(1, 1, 1);     // scale
 
-	// return a rotation  matrix that rotates one vector to another
-	//
-	glm::mat4 rotateToVector(glm::vec3 v1, glm::vec3 v2);
+    glm::vec3 pivot = glm::vec3(0, 0, 0);  // rotate pivot
 
-	//  Hierarchy 
-	//
-	void addChild(SceneObject *child) {
-		childList.push_back(child);
-		child->parent = this;
-	}
+    // Material properties
+    ofColor diffuseColor = ofColor::grey;
+    ofColor specularColor = ofColor::lightGray;
 
-	SceneObject *parent = NULL;        // if parent = NULL, then this obj is the ROOT
-	vector<SceneObject *> childList;
-
-	// position/orientation 
-	//
-	glm::vec3 position = glm::vec3(0, 0, 0);   // translate
-	glm::vec3 rotation = glm::vec3(0, 0, 0);   // rotate
-	glm::vec3 scale = glm::vec3(1, 1, 1);      // scale
-
-	// rotate pivot
-	//
-	glm::vec3 pivot = glm::vec3(0, 0, 0);
-	 
-	// material properties (we will ultimately replace this with a Material class - TBD)
-	//
-	ofColor diffuseColor = ofColor::grey;    // default colors - can be changed.
-	ofColor specularColor = ofColor::lightGray;
-
-	// UI parameters
-	//
-	bool isSelectable = true;
-	string name = "SceneObject";
+    // UI parameters
+    bool isSelectable = true;
+    std::string name = "SceneObject";
 };
 
 class Cone : public SceneObject {
