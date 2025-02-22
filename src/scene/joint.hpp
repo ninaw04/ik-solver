@@ -10,9 +10,7 @@
 
 #include <stdio.h>
 #include "Primitives.h"
-//#include "fwd.hpp"
 #include "ofxAssimpModelLoader.h"
-
 
 struct constraints3R {
     float minx;
@@ -22,7 +20,6 @@ struct constraints3R {
     float minz;
     float maxz;
 };
-
 
 class Joint : public Sphere {
 private:

@@ -94,36 +94,7 @@ void ofApp::setup()
 
 void ofApp::update()
 {
-
-  if (bInPlayback) {
-    nextFrame();
-  }
-
-  // nextFrame();
-  // if keyframes are set and the current frame is between
-  // the two keys, then we need to calculate "in-between" values
-  // for position/rotation of the object that is keyframed.
-  // we then "set" the keyframed objects' position/rotation to
-  // the calculated value.
-  //
-  // cout << frame << endl;
-  if (keyFramesSet() && (frame >= key1.frame && frame <= key2.frame)) {
-    j1->rotation = easeInterp(frame,
-                              key1.frame,
-                              key2.frame,
-                              key1.configRotations.rotunda,
-                              key2.configRotations.rotunda);
-    j1->rotation += easeInterp(frame,
-                               key1.frame,
-                               key2.frame,
-                               key1.configRotations.shoulder,
-                               key2.configRotations.shoulder);
-    j2->rotation = easeInterp(frame,
-                              key1.frame,
-                              key2.frame,
-                              key1.configRotations.elbow,
-                              key2.configRotations.elbow);
-  }
+  keyFrameManager.update(j1, j2);
 }
 
 //--------------------------------------------------------------
@@ -445,22 +416,15 @@ void ofApp::keyPressed(int key)
       break;
     }
     case 'n':
+      // goes to next frame starting from current position
       index++;
-      cout << key1.configRotations.rotunda << endl;
-      cout << key1.configRotations.shoulder << endl;
-      cout << key1.configRotations.elbow << endl;
-      resetKeyFrames();
-      cout << "\nafter keyFrames" << endl;
-      cout << key1.configRotations.rotunda << endl;
-      cout << key1.configRotations.shoulder << endl;
-      cout << key1.configRotations.elbow << endl;
-
-      setFirstFrame();
-      setKeyFrame(index);
+      keyFrameManager.resetKeyFrames();
+      keyFrameManager.setFirstFrame();
+      keyFrameManager.setKeyFrame(index, solutions, displaySolution, j1, j2);
       break;
     case ' ':
-      bInPlayback = !bInPlayback;
-      cout << "bInPlayback: " << bInPlayback << endl;
+      keyFrameManager.bInPlayback = !keyFrameManager.bInPlayback;
+      cout << "bInPlayback: " << keyFrameManager.bInPlayback << endl;
       break;
     case 'p':
       if (objSelected())
@@ -614,22 +578,19 @@ void ofApp::mousePressed(int x, int y, int button)
   }
 
   if (!itemIntersected) {
-    startConfig = { .rotunda = glm::vec3(0, j1->rotation.y, 0),
+    keyFrameManager.startConfig = { .rotunda = glm::vec3(0, j1->rotation.y, 0),
                     .shoulder = glm::vec3(0, 0, j1->rotation.z),
                     .elbow = glm::vec3(0, 0, j2->rotation.z) };
-    resetKeyFrames();
+    keyFrameManager.resetKeyFrames();
     WORLDPOINT = worldPoint;
     solutions.clear();
 
     inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
 
     // animation
-    setFirstFrame();
-    //    if (index == 0) {
-    //      return;
-    //    }
-    setKeyFrame(index);
-    bInPlayback = true;
+    keyFrameManager.setFirstFrame();
+    keyFrameManager.setKeyFrame(index, solutions, displaySolution, j1, j2);
+    keyFrameManager.bInPlayback = true;
   }
 
   // if we selected more than one, pick nearest
@@ -773,6 +734,9 @@ void ofApp::inverseKin2(glm::vec2 target,
 
 //--------------------------------------------------------------
 // Extends inverseKin2 to 3D space
+// First project 3D problem into 2D space
+// Call inverseKin2 twice to get positive and negative solutions
+// Compute rotunda rotation
 //
 void ofApp::inverseKin3(glm::vec3 target,
                         Joint& joint1,
@@ -787,7 +751,6 @@ void ofApp::inverseKin3(glm::vec3 target,
   glm::vec2 targetVec2Neg = glm::vec2(
     -sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
 
-  //
   vector<pair<glm::vec2, glm::vec2>> solutionPairs1, solutionPairs2;
   inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs1);
   inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs2);

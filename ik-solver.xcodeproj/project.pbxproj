@@ -3,13 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2AEF90DA2CF645FD005FF991 /* box.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF90D92CF645FA005FF991 /* box.cc */; };
-		2AEF90DD2CF6462B005FF991 /* joint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF90DC2CF6462A005FF991 /* joint.cpp */; };
-		2AEF90E02CF64640005FF991 /* Primitives.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF90DF2CF64639005FF991 /* Primitives.cpp */; };
+		2A28ADA62D69AB610011B622 /* KeyFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A28ADA52D69AB600011B622 /* KeyFrame.cpp */; };
 		"31365BFA-6A57-4C41-8A1E-DC3F8FA69456" /* ofxColorPicker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "BA182267-36B7-4D89-A14F-02344D29A148" /* ofxColorPicker.cpp */; };
 		"37C76E61-5122-4D41-81ED-A0BA96959067" /* ofxToggle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "A7F770F0-09EF-476B-A81D-B4679804D626" /* ofxToggle.cpp */; };
 		"391C2FE9-A3C9-426E-A594-84C39186B433" /* ofxAssimpAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "FC2C8648-E358-4B29-97E9-25E9F0CB184A" /* ofxAssimpAnimation.cpp */; };
@@ -69,14 +67,8 @@
 		"27CD4469-D77D-4DEE-BD49-FA09CF593E7B" /* color4.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = color4.h; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxAssimpModelLoader/libs/assimp/include/assimp/color4.h; sourceTree = SOURCE_ROOT; };
 		"29A2A51A-9044-4D19-A659-1AF8D400AC41" /* defs.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = defs.h; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxAssimpModelLoader/libs/assimp/include/assimp/defs.h; sourceTree = SOURCE_ROOT; };
 		2A28ADA32D6857550011B622 /* .clang-format */ = {isa = PBXFileReference; lastKnownFileType = text; path = ".clang-format"; sourceTree = "<group>"; };
-		2AEF90D92CF645FA005FF991 /* box.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = box.cc; sourceTree = "<group>"; };
-		2AEF90DB2CF64619005FF991 /* box.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = box.h; sourceTree = "<group>"; };
-		2AEF90DC2CF6462A005FF991 /* joint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = joint.cpp; sourceTree = "<group>"; };
-		2AEF90DF2CF64639005FF991 /* Primitives.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Primitives.cpp; sourceTree = "<group>"; };
-		2AEF90E12CF64643005FF991 /* Primitives.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Primitives.h; sourceTree = "<group>"; };
-		2AEF90E22CF64647005FF991 /* ray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ray.h; sourceTree = "<group>"; };
-		2AEF90E32CF6464C005FF991 /* vector3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector3.h; sourceTree = "<group>"; };
-		2AEF90E42CF646A9005FF991 /* joint.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = joint.hpp; sourceTree = "<group>"; };
+		2A28ADA42D69AB460011B622 /* KeyFrame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyFrame.h; sourceTree = "<group>"; };
+		2A28ADA52D69AB600011B622 /* KeyFrame.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = KeyFrame.cpp; sourceTree = "<group>"; };
 		"30BF725B-4905-4836-9103-7D6295E85B7D" /* StringComparison.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = StringComparison.h; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxAssimpModelLoader/libs/assimp/include/assimp/StringComparison.h; sourceTree = SOURCE_ROOT; };
 		"316FED8E-3F34-431B-A636-28D5C7FA3095" /* Logger.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Logger.hpp; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxAssimpModelLoader/libs/assimp/include/assimp/Logger.hpp; sourceTree = SOURCE_ROOT; };
 		"32F4BD19-E338-402D-AF2A-C20509BCBA12" /* Base64.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Base64.hpp; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxAssimpModelLoader/libs/assimp/include/assimp/Base64.hpp; sourceTree = SOURCE_ROOT; };
@@ -181,6 +173,10 @@
 		"FD3D80D0-011B-488A-B57E-3E7EC49036CD" /* ofxPanel.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxPanel.cpp; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxGui/src/ofxPanel.cpp; sourceTree = SOURCE_ROOT; };
 		"FF962D14-6DE6-4D7D-93FF-FF1337D4CF84" /* XMLTools.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = XMLTools.h; path = /Users/ninawang/Documents/School/CS116A/of_v0.12.0_osx_release/addons/ofxAssimpModelLoader/libs/assimp/include/assimp/XMLTools.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		2A28ADA82D69BD7C0011B622 /* scene */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = scene; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E4B69B590A3A1756003C02F2 /* Frameworks */ = {
@@ -394,14 +390,9 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				2AEF90E32CF6464C005FF991 /* vector3.h */,
-				2AEF90E22CF64647005FF991 /* ray.h */,
-				2AEF90E42CF646A9005FF991 /* joint.hpp */,
-				2AEF90E12CF64643005FF991 /* Primitives.h */,
-				2AEF90DF2CF64639005FF991 /* Primitives.cpp */,
-				2AEF90DC2CF6462A005FF991 /* joint.cpp */,
-				2AEF90DB2CF64619005FF991 /* box.h */,
-				2AEF90D92CF645FA005FF991 /* box.cc */,
+				2A28ADA82D69BD7C0011B622 /* scene */,
+				2A28ADA52D69AB600011B622 /* KeyFrame.cpp */,
+				2A28ADA42D69AB460011B622 /* KeyFrame.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
@@ -451,6 +442,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2A28ADA82D69BD7C0011B622 /* scene */,
 			);
 			name = "ik-solver";
 			productName = myOFApp;
@@ -531,9 +525,6 @@
 				"932D06E7-44F3-45D9-8FE2-36799DE53783" /* ofxAssimpMeshHelper.cpp in Sources */,
 				"58E42247-A688-4A0B-B5B4-7ED103DF16A1" /* ofxAssimpModelLoader.cpp in Sources */,
 				"66B7CBA1-0D16-4407-8310-3F21688634AE" /* ofxAssimpTexture.cpp in Sources */,
-				2AEF90DD2CF6462B005FF991 /* joint.cpp in Sources */,
-				2AEF90E02CF64640005FF991 /* Primitives.cpp in Sources */,
-				2AEF90DA2CF645FD005FF991 /* box.cc in Sources */,
 				"D2A82E80-A727-4FCA-9573-16A437905800" /* ofxBaseGui.cpp in Sources */,
 				"CCC2D835-C8FA-4A51-81B9-94872FCF2F97" /* ofxButton.cpp in Sources */,
 				"31365BFA-6A57-4C41-8A1E-DC3F8FA69456" /* ofxColorPicker.cpp in Sources */,
@@ -542,6 +533,7 @@
 				"AF41B57C-E694-4226-8E9E-A11B314E875B" /* ofxLabel.cpp in Sources */,
 				"42612831-2010-465A-8974-9FDB2C28F9E1" /* ofxPanel.cpp in Sources */,
 				"84FF3DF5-549E-4B0E-8F54-80B61695D577" /* ofxSlider.cpp in Sources */,
+				2A28ADA62D69AB610011B622 /* KeyFrame.cpp in Sources */,
 				"C91B8F93-71A3-4EB4-8046-ED790D23534B" /* ofxSliderGroup.cpp in Sources */,
 				"37C76E61-5122-4D41-81ED-A0BA96959067" /* ofxToggle.cpp in Sources */,
 			);

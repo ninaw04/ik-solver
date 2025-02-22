@@ -6,7 +6,6 @@
 //
 
 #include "joint.hpp"
-//#include "fwd.hpp"
 #include "ofxAssimpModelLoader.h"
 
 int Joint::jointInstances = 0;
