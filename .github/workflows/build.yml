@@ -22,7 +22,7 @@ jobs:
       - name: Set up OpenFrameworks
         run: |
           git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
-          cd ~/openFrameworks/scripts/linux
+          cd ~/openFrameworks/scripts/linux/ubuntu
           ./install_dependencies.sh
           ./compileOF.sh
   
@@ -49,7 +49,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
           cd ~/openFrameworks/scripts/osx 
-          ./install_dependencies.sh
+          ./download_libs.sh
           ./compileOF.sh
 
       - name: Build project
@@ -71,6 +71,7 @@ jobs:
         with:
           msystem: MINGW64
           install: >-
+            git
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-make
             mingw-w64-x86_64-pkg-config
@@ -78,6 +79,10 @@ jobs:
             mingw-w64-x86_64-glew
             mingw-w64-x86_64-freetype
             mingw-w64-x86_64-boost
+
+      - name: Verify Git installation # debugging!!!
+        shell: msys2 {0}
+        run: git --version
 
       - name: Set up OpenFrameworks
         shell: msys2 {0}
