@@ -14,6 +14,7 @@
 //  and animation frames.
 //  Use the mouse to pick an end point for the arm, and it will
 //  rotate to that position.
+//  IK Reference https://motion.cs.illinois.edu/RoboticSystems/InverseKinematics.html#General-discussion
 //
 //  Nina Wang and Viha Shah - December 2024
 //
@@ -24,7 +25,8 @@
 
 //--------------------------------------------------------------
 //
-void ofApp::setup() {
+void ofApp::setup()
+{
   // scene and camera setup
   ofSetBackgroundColor(ofColor::black);
   ofEnableDepthTest();
@@ -39,22 +41,21 @@ void ofApp::setup() {
   ofSetSmoothLighting(true);
   ofSetFrameRate(24);
   theCam = &mainCam;
-  
+
   font.load("fonts/ArgakaFashion-Regular.otf", 24);
-  displaySolution = -1; // TODO maybe move to h
-  
+  displaySolution = -1;  // TODO maybe move to h
+
   // lighting setup
   light1.enable();
   light1.setPosition(5, 5, 0);
   light1.setDiffuseColor(ofColor(255.f, 255.f, 255.f));
   light1.setSpecularColor(ofColor(255.f, 255.f, 255.f));
-  
+
   light2.enable();
   light2.setPosition(0, 60, 40);
   light2.setDiffuseColor(ofColor(200.f, 200.f, 200.f));
   light2.setSpecularColor(ofColor(255.f, 255.f, 255.f));
 
-  
   // GUI setup
   gui.setup();
   gui.setPosition(0, 0);
@@ -67,12 +68,11 @@ void ofApp::setup() {
   gui.add(maxy.setup("Max y Angle", 180, -180, 180));
   gui.add(minz.setup("Min z Angle", 0, 0, 180));
   gui.add(maxz.setup("Max z Angle", 180, -180, 180));
-  
 
   // ground plane
   //
-  scene.push_back(new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0),
-                            ofColor::darkOrchid));
+  scene.push_back(
+    new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0), ofColor::darkOrchid));
 
   // Simple 2 R joint arm solution
   j1->addChild(j2);
@@ -92,7 +92,8 @@ void ofApp::setup() {
   scene.push_back(j3);
 }
 
-void ofApp::update() {
+void ofApp::update()
+{
 
   if (bInPlayback) {
     nextFrame();
@@ -107,20 +108,27 @@ void ofApp::update() {
   //
   // cout << frame << endl;
   if (keyFramesSet() && (frame >= key1.frame && frame <= key2.frame)) {
-    j1->rotation =
-        easeInterp(frame, key1.frame, key2.frame, key1.configRotations.rotunda,
-                   key2.configRotations.rotunda);
-    j1->rotation +=
-        easeInterp(frame, key1.frame, key2.frame, key1.configRotations.shoulder,
-                   key2.configRotations.shoulder);
-    j2->rotation =
-        easeInterp(frame, key1.frame, key2.frame, key1.configRotations.elbow,
-                   key2.configRotations.elbow);
+    j1->rotation = easeInterp(frame,
+                              key1.frame,
+                              key2.frame,
+                              key1.configRotations.rotunda,
+                              key2.configRotations.rotunda);
+    j1->rotation += easeInterp(frame,
+                               key1.frame,
+                               key2.frame,
+                               key1.configRotations.shoulder,
+                               key2.configRotations.shoulder);
+    j2->rotation = easeInterp(frame,
+                              key1.frame,
+                              key2.frame,
+                              key1.configRotations.elbow,
+                              key2.configRotations.elbow);
   }
 }
 
 //--------------------------------------------------------------
-void ofApp::draw() {
+void ofApp::draw()
+{
   theCam->begin();
   ofDrawGrid(1);
   ofNoFill();
@@ -129,15 +137,14 @@ void ofApp::draw() {
 
   //  User point
   ofDrawSphere(WORLDPOINT, 0.2);
-  
+
   //  Text for displaying solutions on the screen
   ofSetColor(ofColor::white);
-  ofPushMatrix(); // Save the current transformation state
+  ofPushMatrix();  // Save the current transformation state
   ofScale(0.07, 0.07);
   font.drawString("Displaying", -70, 160);
   font.drawString("Solution: " + to_string(displaySolution), -70, 130);
   ofPopMatrix();
-  
 
   //  draw the objects in scene
   //
@@ -155,12 +162,11 @@ void ofApp::draw() {
   ofDisableLighting();
   theCam->end();
 
-  
   //  Joint GUI
   ofDisableDepthTest();
-  if (objSelected() && dynamic_cast<Joint *>(selected[0]) != nullptr) {
-    Joint *selectedJoint = dynamic_cast<Joint *>(selected[0]);
-    
+  if (objSelected() && dynamic_cast<Joint*>(selected[0]) != nullptr) {
+    Joint* selectedJoint = dynamic_cast<Joint*>(selected[0]);
+
     auto rotationValue = selected[0]->rotation;
     jointName = "Joint Name: " + selectedJoint->name;
     jointX = "Rotation X: " + std::to_string(rotationValue.x);
@@ -186,7 +192,8 @@ void ofApp::draw() {
 //
 // Draw an XYZ axis in RGB at transform
 //
-void ofApp::drawAxis(glm::mat4 m, float len) {
+void ofApp::drawAxis(glm::mat4 m, float len)
+{
 
   ofSetLineWidth(1.0);
 
@@ -208,7 +215,8 @@ void ofApp::drawAxis(glm::mat4 m, float len) {
 
 // print C++ code for obj tranformation channels. (for debugging);
 //
-void ofApp::printChannels(SceneObject *obj) {
+void ofApp::printChannels(SceneObject* obj)
+{
   cout << "position = glm::vec3(" << obj->position.x << "," << obj->position.y
        << "," << obj->position.z << ");" << endl;
   cout << "rotation = glm::vec3(" << obj->rotation.x << "," << obj->rotation.y
@@ -217,7 +225,8 @@ void ofApp::printChannels(SceneObject *obj) {
        << obj->scale.z << ");" << endl;
 }
 
-void ofApp::saveToFile() {
+void ofApp::saveToFile()
+{
   // traverse skeleton tree and save to file
   string filePath = "skeletons/skelly.txt";
 
@@ -228,16 +237,20 @@ void ofApp::saveToFile() {
   for (auto obj : scene) {
     // create -joint “joint name” -rotate “<x, y, z>” -translate “<x, y, z>”
     // -parent “name”;
-    if (Joint *jointObj = dynamic_cast<Joint *>(obj)) {
+    if (Joint* jointObj = dynamic_cast<Joint*>(obj)) {
       char jointBuf[256];
       // if is root, just don't include parent
       if (jointObj->parent == NULL) {
-        snprintf(jointBuf, sizeof(jointBuf),
+        snprintf(jointBuf,
+                 sizeof(jointBuf),
                  "create -joint %s -rotate <%f, %f, %f> -translate <%f, %f, "
                  "%f> -parent none;",
-                 jointObj->name.c_str(), jointObj->rotation.x,
-                 jointObj->rotation.y, jointObj->rotation.z,
-                 jointObj->position.x, jointObj->position.y,
+                 jointObj->name.c_str(),
+                 jointObj->rotation.x,
+                 jointObj->rotation.y,
+                 jointObj->rotation.z,
+                 jointObj->position.x,
+                 jointObj->position.y,
                  jointObj->position.z);
       }
       // translate and rotate values relative to parent
@@ -246,20 +259,26 @@ void ofApp::saveToFile() {
       // jointObj->rotation.x, jointObj->rotation.y, jointObj->rotation.z,
       // jointObj->position.x, jointObj->position.y, jointObj->position.z;
       else {
-        snprintf(jointBuf, sizeof(jointBuf),
+        snprintf(jointBuf,
+                 sizeof(jointBuf),
                  "create -joint %s -rotate <%f, %f, %f> -translate <%f, %f, "
                  "%f> -parent %s;",
-                 jointObj->name.c_str(), jointObj->rotation.x,
-                 jointObj->rotation.y, jointObj->rotation.z,
-                 jointObj->position.x, jointObj->position.y,
-                 jointObj->position.z, jointObj->parent->name.c_str());
+                 jointObj->name.c_str(),
+                 jointObj->rotation.x,
+                 jointObj->rotation.y,
+                 jointObj->rotation.z,
+                 jointObj->position.x,
+                 jointObj->position.y,
+                 jointObj->position.z,
+                 jointObj->parent->name.c_str());
       }
       skelly << jointBuf << endl;
     }
   }
 }
 
-void ofApp::readSkeleton(ofFile skelly) {
+void ofApp::readSkeleton(ofFile skelly)
+{
   if (skelly.exists()) {
     // read file into buffer
     ofBuffer buffer(skelly);
@@ -302,26 +321,26 @@ void ofApp::readSkeleton(ofFile skelly) {
           getline(ss, token, delimiter);
           if (token == "-rotate") {
             // <x,y,z>
-            getline(ss, token, '<'); // Read until '<'
-            getline(ss, token, '>'); // Read until '>'
+            getline(ss, token, '<');  // Read until '<'
+            getline(ss, token, '>');  // Read until '>'
             sscanf(token.c_str(), "%f, %f, %f", &rot.x, &rot.y, &rot.z);
 
             cout << "Rotate: " << rot.x << ", " << rot.y << ", " << rot.z
                  << endl;
 
             // translate
-            getline(ss, token, delimiter); // gets space
+            getline(ss, token, delimiter);  // gets space
             getline(ss, token, delimiter);
             if (token == "-translate") {
-              getline(ss, token, '<'); // Read until '<'
-              getline(ss, token, '>'); // Read until '>'
+              getline(ss, token, '<');  // Read until '<'
+              getline(ss, token, '>');  // Read until '>'
               sscanf(token.c_str(), "%f, %f, %f", &tran.x, &tran.y, &tran.z);
 
               cout << "Translate: " << tran.x << ", " << tran.y << ", "
                    << tran.z << endl;
 
               // parent
-              getline(ss, token, delimiter); // gets space
+              getline(ss, token, delimiter);  // gets space
               getline(ss, token, delimiter);
               if (token == "-parent") {
                 getline(ss, parentName, delimiter);
@@ -333,7 +352,7 @@ void ofApp::readSkeleton(ofFile skelly) {
       }
 
       // add rotation
-      Joint *curr = new Joint(tran, jointName);
+      Joint* curr = new Joint(tran, jointName);
       curr->rotation = rot;
 
       // find parent
@@ -354,162 +373,170 @@ void ofApp::readSkeleton(ofFile skelly) {
   }
 }
 
-void onLoadSkeletonPressed() {}
+void onLoadSkeletonPressed()
+{
+}
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key) {
+void ofApp::keyReleased(int key)
+{
 
   switch (key) {
-  case OF_KEY_ALT:
-    bAltKeyDown = false;
-    mainCam.disableMouseInput();
-    break;
-  case 'x':
-    bRotateX = false;
-    break;
-  case 'y':
-    bRotateY = false;
-    break;
-  case 'z':
-    bRotateZ = false;
-    break;
-  default:
-    break;
+    case OF_KEY_ALT:
+      bAltKeyDown = false;
+      mainCam.disableMouseInput();
+      break;
+    case 'x':
+      bRotateX = false;
+      break;
+    case 'y':
+      bRotateY = false;
+      break;
+    case 'z':
+      bRotateZ = false;
+      break;
+    default:
+      break;
   }
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
+void ofApp::keyPressed(int key)
+{
   switch (key) {
-  case 'C':
-  case 'c':
-    if (mainCam.getMouseInputEnabled())
-      mainCam.disableMouseInput();
-    else
-      mainCam.enableMouseInput();
-    break;
-  case 'F':
-  case 'b':
-    break;
-  case 'f':
-    ofToggleFullscreen();
-    break;
-  case 'h':
-    bHide = !bHide;
-    break;
-  case 'i':
-    break;
-  case 'j': {
-    Joint *joint = new Joint(glm::vec3(1, 1, 1));
+    case 'C':
+    case 'c':
+      if (mainCam.getMouseInputEnabled())
+        mainCam.disableMouseInput();
+      else
+        mainCam.enableMouseInput();
+      break;
+    case 'F':
+    case 'b':
+      break;
+    case 'f':
+      ofToggleFullscreen();
+      break;
+    case 'h':
+      bHide = !bHide;
+      break;
+    case 'i':
+      break;
+    case 'j': {
+      Joint* joint = new Joint(glm::vec3(1, 1, 1));
 
-    // when selected
-    if (objSelected()) {
-      if (Joint *selectedJoint = dynamic_cast<Joint *>(selected[0])) {
-        selectedJoint->addChild(joint);
+      // when selected
+      if (objSelected()) {
+        if (Joint* selectedJoint = dynamic_cast<Joint*>(selected[0])) {
+          selectedJoint->addChild(joint);
+        }
       }
+      scene.push_back(joint);
+      break;
     }
-    scene.push_back(joint);
-    break;
-  }
-  case 'l': {
-    ofFile file;
-    file.open("skeletons/skelly.txt", ofFile::ReadOnly);
-    readSkeleton(file);
-    break;
-  }
-  case 's': {
-    saveToFile();
-    break;
-  }
-  case 'n':
-    index++;
-    cout << key1.configRotations.rotunda << endl;
-    cout << key1.configRotations.shoulder << endl;
-    cout << key1.configRotations.elbow << endl;
-    resetKeyFrames();
-    cout << "\nafter keyFrames" << endl;
-    cout << key1.configRotations.rotunda << endl;
-    cout << key1.configRotations.shoulder << endl;
-    cout << key1.configRotations.elbow << endl;
+    case 'l': {
+      ofFile file;
+      file.open("skeletons/skelly.txt", ofFile::ReadOnly);
+      readSkeleton(file);
+      break;
+    }
+    case 's': {
+      saveToFile();
+      break;
+    }
+    case 'n':
+      index++;
+      cout << key1.configRotations.rotunda << endl;
+      cout << key1.configRotations.shoulder << endl;
+      cout << key1.configRotations.elbow << endl;
+      resetKeyFrames();
+      cout << "\nafter keyFrames" << endl;
+      cout << key1.configRotations.rotunda << endl;
+      cout << key1.configRotations.shoulder << endl;
+      cout << key1.configRotations.elbow << endl;
 
-    setFirstFrame();
-    setKeyFrame(index);
-    break;
-  case ' ':
-    bInPlayback = !bInPlayback;
-    cout << "bInPlayback: " << bInPlayback << endl;
-    break;
-  case 'p':
-    if (objSelected())
-      printChannels(selected[0]);
-    break;
-  case 'r':
-    break;
-  case 'x':
-    bRotateX = true;
-    break;
-  case 'y':
-    bRotateY = true;
-    break;
-  case 'z':
-    bRotateZ = true;
-    break;
-  case OF_KEY_F1:
-    theCam = &mainCam;
-    break;
-  case OF_KEY_F2:
-    theCam = &sideCam;
-    break;
-  case OF_KEY_F3:
-    theCam = &topCam;
-    break;
-  case OF_KEY_ALT:
-    bAltKeyDown = true;
-    if (!mainCam.getMouseInputEnabled())
-      mainCam.enableMouseInput();
-    break;
-  case OF_KEY_BACKSPACE: {
-    if (objSelected()) {
+      setFirstFrame();
+      setKeyFrame(index);
+      break;
+    case ' ':
+      bInPlayback = !bInPlayback;
+      cout << "bInPlayback: " << bInPlayback << endl;
+      break;
+    case 'p':
+      if (objSelected())
+        printChannels(selected[0]);
+      break;
+    case 'r':
+      break;
+    case 'x':
+      bRotateX = true;
+      break;
+    case 'y':
+      bRotateY = true;
+      break;
+    case 'z':
+      bRotateZ = true;
+      break;
+    case OF_KEY_F1:
+      theCam = &mainCam;
+      break;
+    case OF_KEY_F2:
+      theCam = &sideCam;
+      break;
+    case OF_KEY_F3:
+      theCam = &topCam;
+      break;
+    case OF_KEY_ALT:
+      bAltKeyDown = true;
+      if (!mainCam.getMouseInputEnabled())
+        mainCam.enableMouseInput();
+      break;
+    case OF_KEY_BACKSPACE: {
+      if (objSelected()) {
 
-      if (Joint *selectedJoint = dynamic_cast<Joint *>(selected[0])) {
-        if (selectedJoint->parent == NULL) {
-          // remove the whole tree?
-        } else {
-          for (auto child : selectedJoint->childList) {
-            child->parent = selectedJoint->parent;
-            selectedJoint->parent->addChild(child);
-          }
-          selectedJoint->childList.clear();
+        if (Joint* selectedJoint = dynamic_cast<Joint*>(selected[0])) {
+          if (selectedJoint->parent == NULL) {
+            // remove the whole tree?
+          } else {
+            for (auto child : selectedJoint->childList) {
+              child->parent = selectedJoint->parent;
+              selectedJoint->parent->addChild(child);
+            }
+            selectedJoint->childList.clear();
 
-          auto &siblings = selectedJoint->parent->childList;
+            auto& siblings = selectedJoint->parent->childList;
 
-          // std::remove reorders the container to avoid invalidating the
-          // iterators
-          siblings.erase(
+            // std::remove reorders the container to avoid invalidating the
+            // iterators
+            siblings.erase(
               std::remove(siblings.begin(), siblings.end(), selectedJoint),
               siblings.end());
-          selectedJoint->parent = NULL;
+            selectedJoint->parent = NULL;
 
-          SceneObject *tribute = selected[0];
-          scene.erase(std::remove(scene.begin(), scene.end(), tribute),
-                      scene.end());
-          selected.erase(std::remove(selected.begin(), selected.end(), tribute),
-                         selected.end());
-          delete tribute;
+            SceneObject* tribute = selected[0];
+            scene.erase(std::remove(scene.begin(), scene.end(), tribute),
+                        scene.end());
+            selected.erase(
+              std::remove(selected.begin(), selected.end(), tribute),
+              selected.end());
+            delete tribute;
+          }
         }
       }
     }
-  }
-  default:
-    break;
+    default:
+      break;
   }
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y) {}
+void ofApp::mouseMoved(int x, int y)
+{
+}
 
 //--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button) {
+void ofApp::mouseDragged(int x, int y, int button)
+{
 
   if (objSelected() && bDrag) {
     glm::vec3 point;
@@ -522,7 +549,8 @@ void ofApp::mouseDragged(int x, int y, int button) {
 //  selected object. If no object selected, the plane passing through the world
 //  origin is used.
 //
-bool ofApp::mouseToDragPlane(int x, int y, glm::vec3 &point) {
+bool ofApp::mouseToDragPlane(int x, int y, glm::vec3& point)
+{
   glm::vec3 p = theCam->screenToWorld(glm::vec3(x, y, 0));
   glm::vec3 d = p - theCam->getPosition();
   glm::vec3 dn = glm::normalize(d);
@@ -533,8 +561,8 @@ bool ofApp::mouseToDragPlane(int x, int y, glm::vec3 &point) {
     pos = selected[0]->position;
   } else
     pos = glm::vec3(0, 0, 0);
-  if (glm::intersectRayPlane(p, dn, pos, glm::normalize(theCam->getZAxis()),
-                             dist)) {
+  if (glm::intersectRayPlane(
+        p, dn, pos, glm::normalize(theCam->getZAxis()), dist)) {
     point = p + dn * dist;
     return true;
   }
@@ -546,7 +574,8 @@ bool ofApp::mouseToDragPlane(int x, int y, glm::vec3 &point) {
 // Provides functionality of single selection and if something is already
 // selected, sets up state for translation/rotation of object using mouse.
 //
-void ofApp::mousePressed(int x, int y, int button) {
+void ofApp::mousePressed(int x, int y, int button)
+{
 
   // if we are moving the camera around, don't allow selection
   //
@@ -560,7 +589,7 @@ void ofApp::mousePressed(int x, int y, int button) {
   //
   // test if something selected
   //
-  vector<SceneObject *> hits;
+  vector<SceneObject*> hits;
 
   glm::vec3 p = theCam->screenToWorld(glm::vec3(x, y, 0));
   glm::vec3 d = p - theCam->getPosition();
@@ -585,28 +614,27 @@ void ofApp::mousePressed(int x, int y, int button) {
   }
 
   if (!itemIntersected) {
-    startConfig = {.rotunda = glm::vec3(0, j1->rotation.y, 0),
-                   .shoulder = glm::vec3(0, 0, j1->rotation.z),
-                   .elbow = glm::vec3(0, 0, j2->rotation.z)};
+    startConfig = { .rotunda = glm::vec3(0, j1->rotation.y, 0),
+                    .shoulder = glm::vec3(0, 0, j1->rotation.z),
+                    .elbow = glm::vec3(0, 0, j2->rotation.z) };
     resetKeyFrames();
     WORLDPOINT = worldPoint;
     solutions.clear();
-    
-    inverseKin3(worldPoint, *j1, *j2,
-                                                          *j3, solutions);
+
+    inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
 
     // animation
     setFirstFrame();
-//    if (index == 0) {
-//      return;
-//    }
+    //    if (index == 0) {
+    //      return;
+    //    }
     setKeyFrame(index);
     bInPlayback = true;
   }
 
   // if we selected more than one, pick nearest
   //
-  SceneObject *selectedObj = NULL;
+  SceneObject* selectedObj = NULL;
   if (hits.size() > 0) {
     selectedObj = hits[0];
     float nearestDist = std::numeric_limits<float>::infinity();
@@ -622,14 +650,14 @@ void ofApp::mousePressed(int x, int y, int button) {
     selected.push_back(selectedObj);
     bDrag = true;
     mouseToDragPlane(x, y, lastPoint);
-    if (objSelected() && dynamic_cast<Joint *>(selected[0]) != nullptr) {
-      Joint *selectedJoint = dynamic_cast<Joint *>(selected[0]);
+    if (objSelected() && dynamic_cast<Joint*>(selected[0]) != nullptr) {
+      Joint* selectedJoint = dynamic_cast<Joint*>(selected[0]);
       // setting initial slider constraints to object constraints
       miny = selectedJoint->yrange.first;
       maxy = selectedJoint->yrange.second;
       minz = selectedJoint->zrange.first;
       maxz = selectedJoint->zrange.second;
-      
+
       // now allowing user to set slider constraints
       selectedJoint->constraints.minx = selectedJoint->xrange.first;
       selectedJoint->constraints.maxx = selectedJoint->xrange.second;
@@ -644,44 +672,59 @@ void ofApp::mousePressed(int x, int y, int button) {
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button) { bDrag = false; }
+void ofApp::mouseReleased(int x, int y, int button)
+{
+  bDrag = false;
+}
 
 //--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y) {}
+void ofApp::mouseEntered(int x, int y)
+{
+}
 
 //--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y) {}
+void ofApp::mouseExited(int x, int y)
+{
+}
 
 //--------------------------------------------------------------
-void ofApp::windowResized(int w, int h) {}
+void ofApp::windowResized(int w, int h)
+{
+}
 
 //--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg) {}
+void ofApp::gotMessage(ofMessage msg)
+{
+}
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo) {}
+void ofApp::dragEvent(ofDragInfo dragInfo)
+{
+}
 
-// sets the specified 3dof arm to reach target point
-void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
-                        Joint &joint3,
-                        vector<pair<glm::vec2, glm::vec2>> &solutions) {
+//--------------------------------------------------------------
+// Computes 2D inverse kinematics for planar 2DOF arm
+// returns elbow and shoulder rotation (joint 1 and 2)
+//
+void ofApp::inverseKin2(glm::vec2 target,
+                        Joint& joint1,
+                        Joint& joint2,
+                        Joint& joint3,
+                        vector<pair<glm::vec2, glm::vec2>>& solutions)
+{
+  // calculate total reach
   double reach = glm::distance(joint1.getPosition(), joint2.getPosition()) +
                  glm::distance(joint2.getPosition(), joint3.getPosition());
-
-  // 2RIK
-  // magnitude of target squared - bone1 squared - bone2 squared
-  // all divided by 2*bone1*bone2
-  // is equal to c2
-
-  // RETURN VALUE IS CHANGING JOINT 1 AND 2 ROTATION
 
   double targetLen = glm::length(target);
   double bone1 = glm::distance(joint1.getPosition(), joint2.getPosition());
   double bone2 = glm::distance(joint2.getPosition(), joint3.getPosition());
+  
+  // law of cosines to find elbow angle c2
   double numerator =
-      glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
+    glm::pow(targetLen, 2) - glm::pow(bone1, 2) - glm::pow(bone2, 2);
   double denominator = 2 * bone1 * bone2;
-  double c2 = 0; // idk is this best practice
+  double c2 = 0;
 
   glm::vec2 rot1, rot2;
 
@@ -692,92 +735,74 @@ void ofApp::inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
     c2 = numerator / denominator;
   }
 
-  if (glm::abs(c2) > 1) {
+  if (glm::abs(c2) > 1) { // target is unreachable
     printf("no bueno target location\n");
     return;
-  } else if (c2 == 1) {
-    // {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
+  } else if (c2 == 1) { // arm is fully extended {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),0)}
     rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
     rot2 = glm::vec2(0, 0);
     solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and
-             target !=
-                 glm::vec2(
-                     0,
-                     0)) { // if 𝑐2=−1 and 𝐱𝐷≠0 then return  {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
+  } else if (c2 == -1 and target != glm::vec2(0,0)) {  // arm is fully folded, if 𝑐2=−1 and 𝐱𝐷≠0 then return {(𝑎𝑡𝑎𝑛2(𝑥𝑦,𝑥𝑥),𝜋)}
     rot1 = glm::degrees(glm::vec2(0, atan2(target.y, target.x)));
     rot2 = glm::degrees(glm::vec2(0, PI));
     solutions.push_back(pair(rot1, rot2));
-  } else if (c2 == -1 and
-             target ==
-                 glm::vec2(
-                     0,
-                     0)) { // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
+  } else if (c2 == -1 and target == glm::vec2(0, 0)) {  // if  𝑐2=−1 and  𝐱𝐷=0 then return {(𝑞1,𝜋)|𝑞1∈[0,2𝜋)}
     // as long as q2 is pi, q1 can be anything, we are returning the original
     // joint rotation
-    rot1 = joint1.rotation;                // (q1)
-    rot2 = glm::degrees(glm::vec2(0, PI)); // pi
+    rot1 = joint1.rotation;                 // (q1)
+    rot2 = glm::degrees(glm::vec2(0, PI));  // pi
     solutions.push_back(pair(rot1, rot2));
-  } else { // let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
-
+  } else {  // two possible elbow angles, let 𝑞(1)2←cos−1𝑐2 and 𝑞(2)2←−cos−1𝑐2
+    
     double theta = glm::degrees(atan2(target.y, target.x));
-    //      cout << "theta: " << theta << endl;
-    for (int k = 1; k <= 2; k++) { // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
+    for (int k = 1; k <= 2; k++) {  // 𝑞(𝑘)1=𝜃−𝑎𝑡𝑎𝑛2(𝐿2sin𝑞(𝑘)2,𝐿1+𝐿2cos𝑞(𝑘)2)
       // positive and negative q2
       rot2 = (k == 1) ? glm::degrees(glm::vec2(0, glm::acos(c2)))
                       : glm::degrees(glm::vec2(0, -glm::acos(c2)));
 
       double endEffHeading =
-          glm::degrees(atan2(bone2 * sin(glm::radians(rot2.y)),
-                             bone1 + (bone2 * cos(glm::radians(rot2.y)))));
+        glm::degrees(atan2(bone2 * sin(glm::radians(rot2.y)),
+                           bone1 + (bone2 * cos(glm::radians(rot2.y)))));
       double joint1RotationZ = theta - endEffHeading;
 
       rot1 = glm::vec2(0, joint1RotationZ);
       solutions.push_back(pair(rot1, rot2));
     }
   }
-
-  // law of cosines, the distance from end effector to rotunda
-  double gamma = rot2.y;
-  double endEfDist =
-      sqrt(pow(bone1, 2) + pow(bone2, 2) - (2 * bone1 * bone2 * cos(gamma)));
 }
 
-void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
-                        Joint &joint3, vector<jointDegrees3R> &solutions) {
+//--------------------------------------------------------------
+// Extends inverseKin2 to 3D space
+//
+void ofApp::inverseKin3(glm::vec3 target,
+                        Joint& joint1,
+                        Joint& joint2,
+                        Joint& joint3,
+                        vector<jointDegrees3R>& solutions)
+{
   // calculate shoulder and elbow rotation about the z plane
-  double shoulderOffset = 0; // l1 is offset from rotunda to shoulder
+  double shoulderOffset = 0;  // l1 is offset from rotunda to shoulder
   glm::vec2 targetVec2Pos = glm::vec2(sqrt(pow(target.x, 2) + pow(target.z, 2)),
                                       target.y + shoulderOffset);
   glm::vec2 targetVec2Neg = glm::vec2(
-      -sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
+    -sqrt(pow(target.x, 2) + pow(target.z, 2)), target.y + shoulderOffset);
 
+  //
   vector<pair<glm::vec2, glm::vec2>> solutionPairs1, solutionPairs2;
-  //    cout << "Vector 2 Positive" << endl;
   inverseKin2(targetVec2Pos, joint1, joint2, joint3, solutionPairs1);
   inverseKin2(targetVec2Neg, joint1, joint2, joint3, solutionPairs2);
 
   double joint1Angle = glm::degrees(
-      glm::atan(target.z, target.x)); // rotunda rotation about the y
+    glm::atan(target.z, target.x));  // rotunda rotation about the y
 
-  //    int i = 0;
-  // convert all solution pairs into solution triplets yee haw
+  // convert all solution pairs into solution triplets
   for (pair<glm::vec2, glm::vec2> sol : solutionPairs1) {
     jointDegrees3R config;
     config.rotunda = glm::vec3(0, -joint1Angle, 0);
-    config.shoulder =
-        glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
-    config.elbow =
-        glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
-
-    //      cout << i << ":" << endl;
-    //      cout << "rotunda: " << config.rotunda << endl;
-    //      cout << "shoulder: " << config.shoulder << endl;
-    //      cout << "elbow: " << config.elbow << endl;
-    //      i++;
+    config.shoulder = glm::vec3(sol.first[0], 0, sol.first[1]);  // y and z are flipped
+    config.elbow = glm::vec3(sol.second[0], 0, sol.second[1]);  // y and z are flipped
 
     // check if valid within constraints
-    // config.elbow -= joint2.getTotalRotation();
     if (config.rotunda.y >= j1->yrange.first &&
         config.rotunda.y <= j1->yrange.second &&
         config.shoulder.z >= j1->zrange.first &&
@@ -791,16 +816,9 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
   for (pair<glm::vec2, glm::vec2> sol : solutionPairs2) {
     jointDegrees3R config;
     config.rotunda = glm::vec3(0, -(joint1Angle + 180), 0);
-    config.shoulder =
-        glm::vec3(sol.first[0], 0, sol.first[1]); // y and z are flipped
-    config.elbow =
-        glm::vec3(sol.second[0], 0, sol.second[1]); // y and z are flipped
+    config.shoulder = glm::vec3(sol.first[0], 0, sol.first[1]);  // y and z are flipped
+    config.elbow = glm::vec3(sol.second[0], 0, sol.second[1]);  // y and z are flipped
 
-    //        cout << i << ":" << endl;
-    //        cout << "rotunda: " << config.rotunda << endl;
-    //        cout << "shoulder: " << config.shoulder << endl;
-    //        cout << "elbow: " << config.elbow << endl;
-    
     // check if valid within constraints
     if (config.rotunda.y >= j1->yrange.first &&
         config.rotunda.y <= j1->yrange.second &&
@@ -810,6 +828,5 @@ void ofApp::inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
         config.elbow.z <= j2->zrange.second) {
       solutions.push_back(config);
     }
-    //        i++;
   }
 }

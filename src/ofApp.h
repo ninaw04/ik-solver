@@ -27,19 +27,22 @@
 
 #include "ofxAssimpModelLoader.h"
 
-struct jointDegrees3R {
+struct jointDegrees3R
+{
   glm::vec3 rotunda;
   glm::vec3 shoulder;
   glm::vec3 elbow;
 };
 
-class KeyFrame {
+class KeyFrame
+{
 public:
-  int frame = -1; //  -1 => no key is set;
+  int frame = -1;  //  -1 => no key is set;
   jointDegrees3R configRotations;
 };
 
-class ofApp : public ofBaseApp {
+class ofApp : public ofBaseApp
+{
 
 public:
   void setup();
@@ -58,18 +61,26 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
   static void drawAxis(glm::mat4 transform = glm::mat4(1.0), float len = 1.0);
-  bool mouseToDragPlane(int x, int y, glm::vec3 &point);
-  void printChannels(SceneObject *);
-  bool objSelected() { return (selected.size() ? true : false); };
+  bool mouseToDragPlane(int x, int y, glm::vec3& point);
+  void printChannels(SceneObject*);
+  bool objSelected()
+  {
+    return (selected.size() ? true : false);
+  };
   void saveToFile();
   void readSkeleton(ofFile skeleton);
 
-  void inverseKin2(glm::vec2 target, Joint &joint1, Joint &joint2,
-                   Joint &joint3,
-                   vector<pair<glm::vec2, glm::vec2>> &solutions);
-  void inverseKin3(glm::vec3 target, Joint &joint1, Joint &joint2,
-                   Joint &joint3, vector<jointDegrees3R> &solutions);
-  void handleSolutions(vector<jointDegrees3R> &solutions);
+  void inverseKin2(glm::vec2 target,
+                   Joint& joint1,
+                   Joint& joint2,
+                   Joint& joint3,
+                   vector<pair<glm::vec2, glm::vec2>>& solutions);
+  void inverseKin3(glm::vec3 target,
+                   Joint& joint1,
+                   Joint& joint2,
+                   Joint& joint3,
+                   vector<jointDegrees3R>& solutions);
+  void handleSolutions(vector<jointDegrees3R>& solutions);
 
   // Lights
   //
@@ -81,7 +92,7 @@ public:
   ofEasyCam mainCam;
   ofCamera sideCam;
   ofCamera topCam;
-  ofCamera *theCam; // set to current camera either mainCam or sideCam
+  ofCamera* theCam;  // set to current camera either mainCam or sideCam
 
   // Materials
   //
@@ -89,8 +100,8 @@ public:
 
   // scene components
   //
-  vector<SceneObject *> scene;
-  vector<SceneObject *> selected;
+  vector<SceneObject*> scene;
+  vector<SceneObject*> selected;
   ofPlanePrimitive plane;
 
   // state
@@ -113,53 +124,74 @@ public:
   ofxFloatSlider maxy;
   ofxFloatSlider minz;
   ofxFloatSlider maxz;
-  
+
   ofTrueTypeFont font;
   int displaySolution;
 
   // ARM
-  Joint *j1 = new Joint();
-  Joint *j2 = new Joint();
-  Joint *j3 = new Joint();
-  Joint *j4 = new Joint();
+  Joint* j1 = new Joint();
+  Joint* j2 = new Joint();
+  Joint* j3 = new Joint();
+  Joint* j4 = new Joint();
 
   vector<jointDegrees3R> solutions;
 
-  // RAHHHH
   glm::vec3 WORLDPOINT = glm::vec3(0, 0, 0);
 
   // key framing
   //
-  void setFirstFrame() { frame = frameBegin; }
-  void nextFrame() {
-    //		frame = (frame == frameEnd ? frameBegin: frame + 1);
+  void setFirstFrame()
+  {
+    frame = frameBegin;
+  }
+
+  void nextFrame()
+  {
     if (frame != frameEnd) {
       frame = frame + 1;
     }
   }
-  void prevFrame() { frame = (frame == frameBegin ? frame : frame - 1); }
-  void startPlayback() {
+  void prevFrame()
+  {
+    frame = (frame == frameBegin ? frame : frame - 1);
+  }
+  void startPlayback()
+  {
     //    frame = frameBegin;
     bInPlayback = true;
   }
 
-  void stopPlayback() { bInPlayback = false; }
+  void stopPlayback()
+  {
+    bInPlayback = false;
+  }
 
   // check if both keys set
   //
-  bool keyFramesSet() { return (key1.frame != -1 && key2.frame != -1); }
+  bool keyFramesSet()
+  {
+    return (key1.frame != -1 && key2.frame != -1);
+  }
 
   // linear interpolation between two keyframes
   //
-  glm::vec3 linearInterp(int frame, int frameStart, int frameEnd,
-                         const glm::vec3 &start, const glm::vec3 &end) {
+  glm::vec3 linearInterp(int frame,
+                         int frameStart,
+                         int frameEnd,
+                         glm::vec3 const& start,
+                         glm::vec3 const& end)
+  {
     return mapVec(frame, frameStart, frameEnd, start, end);
   }
 
   // example non-linear interpolation between two keyframes (ease-in ease-out)
   //
-  glm::vec3 easeInterp(int frame, int frameStart, int frameEnd,
-                       const glm::vec3 &start, const glm::vec3 &end) {
+  glm::vec3 easeInterp(int frame,
+                       int frameStart,
+                       int frameEnd,
+                       glm::vec3 const& start,
+                       glm::vec3 const& end)
+  {
 
     // normalize range (0 to 1) and input to ease formula
     //
@@ -171,14 +203,21 @@ public:
   //  ease-in and ease-out interpolation between two key frames
   //  this function produces a sigmoid curve normalized in x, y in (0 to 1);
   //
-  float ease(float x) { return (x * x / (x * x + (1 - x) * (1 - x))); }
+  float ease(float x)
+  {
+    return (x * x / (x * x + (1 - x) * (1 - x)));
+  }
 
   // helper functions to use ofMap on a vector
   //
   // input a float value in a float range, output a vector
   //
-  glm::vec3 mapVec(float val, float start, float end, const glm::vec3 &outStart,
-                   const glm::vec3 &outEnd) {
+  glm::vec3 mapVec(float val,
+                   float start,
+                   float end,
+                   glm::vec3 const& outStart,
+                   glm::vec3 const& outEnd)
+  {
     return glm::vec3(ofMap(val, start, end, outStart.x, outEnd.x),
                      ofMap(val, start, end, outStart.y, outEnd.y),
                      ofMap(val, start, end, outStart.z, outEnd.z));
@@ -186,9 +225,12 @@ public:
 
   // input a vec3 value in a vec3 range, output a vector
   //
-  glm::vec3 mapVec(const glm::vec3 &val, const glm::vec3 &start,
-                   const glm::vec3 &end, const glm::vec3 &outStart,
-                   const glm::vec3 &outEnd) {
+  glm::vec3 mapVec(glm::vec3 const& val,
+                   glm::vec3 const& start,
+                   glm::vec3 const& end,
+                   glm::vec3 const& outStart,
+                   glm::vec3 const& outEnd)
+  {
     return glm::vec3(ofMap(val.x, start.x, end.x, outStart.x, outEnd.x),
                      ofMap(val.y, start.y, end.y, outStart.y, outEnd.y),
                      ofMap(val.z, start.z, end.z, outStart.z, outEnd.z));
@@ -199,20 +241,23 @@ public:
   // call this function again and key2 is set.
   // this "cycles" until you call resetKeyFrames();
   //
-  void setKeyFrame(int index) {
-    
+  void setKeyFrame(int index)
+  {
+
     key1.frame = frameBegin;
     key2.frame = frameEnd;
     cout << solutions.size() << endl;
     if (solutions.size() > 0) {
       int solIndex = index % solutions.size();
       displaySolution = solIndex;
-//      key1.configRotations = {.rotunda = glm::vec3(0, j1->rotation.y, 0),
-//                              .shoulder = glm::vec3(0, 0, j1->rotation.z),
-//                              .elbow = glm::vec3(0, 0, j2->rotation.z)};
-      key2.configRotations = {.rotunda = solutions[solIndex].rotunda,
-                              .shoulder = solutions[solIndex].shoulder,
-                              .elbow = solutions[solIndex].elbow};
+      //      key1.configRotations = {.rotunda = glm::vec3(0, j1->rotation.y,
+      //      0),
+      //                              .shoulder = glm::vec3(0, 0,
+      //                              j1->rotation.z), .elbow = glm::vec3(0, 0,
+      //                              j2->rotation.z)};
+      key2.configRotations = { .rotunda = solutions[solIndex].rotunda,
+                               .shoulder = solutions[solIndex].shoulder,
+                               .elbow = solutions[solIndex].elbow };
       // cout << "rotunda: " << solutions[solIndex].rotunda << endl;
       // cout << "shoulder: " << solutions[solIndex].shoulder << endl;
       // cout << "elbow: " << solutions[solIndex].elbow << endl;
@@ -221,24 +266,22 @@ public:
 
   // reset key frames
   //
-  void resetKeyFrames() {
+  void resetKeyFrames()
+  {
     key1.frame = key2.frame = -1;
-    // key1.obj = key2.obj = NULL;
-    // bKey2Next = false;
     key1.configRotations = startConfig;
-
   }
-  jointDegrees3R startConfig = {.rotunda = glm::vec3(0, 0, 0),
-                                .shoulder = glm::vec3(0, 0, 0),
-                                .elbow = glm::vec3(0, 0, 0)};
+  jointDegrees3R startConfig = { .rotunda = glm::vec3(0, 0, 0),
+                                 .shoulder = glm::vec3(0, 0, 0),
+                                 .elbow = glm::vec3(0, 0, 0) };
   // key framing
   //
-  KeyFrame key1,key2;      // this demo just has 2 key frames
-  int frame = 1;            // current frame
-  int frameBegin = 1;       // first frame of playback range;
-  int frameEnd = 150;       // last frame of playback range;
-                            // int speed = 100;
-  bool bInPlayback = false; // true => we are in playback mode
+  KeyFrame key1, key2;       // this demo just has 2 key frames
+  int frame = 1;             // current frame
+  int frameBegin = 1;        // first frame of playback range;
+  int frameEnd = 150;        // last frame of playback range;
+                             // int speed = 100;
+  bool bInPlayback = false;  // true => we are in playback mode
   bool bKey2Next = false;
   int index = 0;
 };
