@@ -8,6 +8,11 @@
 //  Modifer keys for rotatation are x, y and z keys (for each axis of rotation)
 //
 //  (c) Kevin M. Smith  - 24 September 2018
+
+//  This project builds off of the Skeleton Builder for the arm
+//  and uses interpolation for animating key frames
+//
+//  Nina Wang and Viha Shah - December 2024
 //
 
 #include "Primitives.h"
@@ -21,6 +26,7 @@
 #include "ofxSlider.h"
 
 #include "ofxAssimpModelLoader.h"
+
 struct jointDegrees3R {
   glm::vec3 rotunda;
   glm::vec3 shoulder;
@@ -30,13 +36,9 @@ struct jointDegrees3R {
 class KeyFrame {
 public:
   int frame = -1; //  -1 => no key is set;
-  // glm::vec3 position = glm::vec3(0, 0, 0);   // translate channel
-  // glm::vec3 rotation = glm::vec3(0, 0, 0);   // rotate channel
-  // glm::vec3 scale  = glm::vec3(1, 1, 1);   // rotate channel
-  // SceneObject *obj = NULL;                   // object that is
-  // keyframed
   jointDegrees3R configRotations;
 };
+
 class ofApp : public ofBaseApp {
 
 public:
@@ -120,8 +122,6 @@ public:
   Joint *j2 = new Joint();
   Joint *j3 = new Joint();
   Joint *j4 = new Joint();
-  // Joint *j4 = new Joint(glm::vec3(1, 1, 0), "j4");
-  // j3->setPosition(glm::vec3(0,2,0));
 
   vector<jointDegrees3R> solutions;
 

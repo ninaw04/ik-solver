@@ -10,20 +10,22 @@
 //  (c) Kevin M. Smith  - 24 September 2018
 //
 
+//  Inverse Kinematics solver, implemented with Skeleton Builder
+//  and animation frames.
+//  Use the mouse to pick an end point for the arm, and it will
+//  rotate to that position.
+//
+//  Nina Wang and Viha Shah - December 2024
+//
+
 #include "ofApp.h"
-// #include "fwd.hpp"
 #include "ofColor.h"
 #include "ofGraphics.h"
 
 //--------------------------------------------------------------
 //
 void ofApp::setup() {
-  gui.setup();
-
-  // setting up skeleton loader
-  //    loadSkeleton.setup("SkeletonLoader", "")
-  //    skeletonPath.addListener(this, &ofApp::onLoadSkeletonPressed);
-
+  // scene and camera setup
   ofSetBackgroundColor(ofColor::black);
   ofEnableDepthTest();
   mainCam.setDistance(15);
@@ -36,8 +38,12 @@ void ofApp::setup() {
   topCam.lookAt(glm::vec3(0, 0, 0));
   ofSetSmoothLighting(true);
   ofSetFrameRate(24);
-  // setup one point light
-  //
+  theCam = &mainCam;
+  
+  font.load("fonts/ArgakaFashion-Regular.otf", 24);
+  displaySolution = -1; // TODO maybe move to h
+  
+  // lighting setup
   light1.enable();
   light1.setPosition(5, 5, 0);
   light1.setDiffuseColor(ofColor(255.f, 255.f, 255.f));
@@ -48,8 +54,8 @@ void ofApp::setup() {
   light2.setDiffuseColor(ofColor(200.f, 200.f, 200.f));
   light2.setSpecularColor(ofColor(255.f, 255.f, 255.f));
 
-  theCam = &mainCam;
-
+  
+  // GUI setup
   gui.setup();
   gui.setPosition(0, 0);
   gui.setSize(500, 20);
@@ -62,42 +68,28 @@ void ofApp::setup() {
   gui.add(minz.setup("Min z Angle", 0, 0, 180));
   gui.add(maxz.setup("Max z Angle", 180, -180, 180));
   
-  font.load("fonts/ArgakaFashion-Regular.otf", 24);
-  displaySolution = -1;
 
-  //  create a scene consisting of a ground plane with 2x2 blocks
-  //  arranged in semi-random positions, scales and rotations
-  //
   // ground plane
   //
   scene.push_back(new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0),
                             ofColor::darkOrchid));
-  
-//  scene.push_back(new Plane(glm::vec3(0, -0.5, 0), glm::vec3(0, 1, 0),
-//                            ofColor::black));
 
-  // Simple 2 R joint arm solution// joints
+  // Simple 2 R joint arm solution
   j1->addChild(j2);
   j2->addChild(j3);
   j3->addChild(j4);
-  j1->addModel("shoulder1/shoulderRevised10.obj", glm::vec3(0, 2, 0));
-  j2->addModel("test1/elbow7.obj", glm::vec3(0, 0, 0));
+  j1->addModel("arm-assets/shoulder.obj", glm::vec3(0, 2, 0));
+  j2->addModel("arm-assets/elbow.obj", glm::vec3(0, 0, 0));
 
   j1->setPosition(glm::vec3(0, 0, 0));
   j2->setPosition(glm::vec3(4, 0, 0));
   j3->setPosition(glm::vec3(8, 0, 0));
   j4->setPosition(glm::vec3(2, 0, 0));
-  j3->addModel("endeffector/endeffector.obj", glm::vec3(0, 3, 0), 0.004);
-
-  // j3->addChild(j4);
+  j3->addModel("arm-assets/endeffector.obj", glm::vec3(0, 3, 0), 0.004);
 
   scene.push_back(j1);
   scene.push_back(j2);
   scene.push_back(j3);
-
-  // scene.push_back(j4);
-
-  // expand this to
 }
 
 void ofApp::update() {
@@ -115,18 +107,6 @@ void ofApp::update() {
   //
   // cout << frame << endl;
   if (keyFramesSet() && (frame >= key1.frame && frame <= key2.frame)) {
-    // key1.obj->position = linearInterp(frame, key1.frame, key2.frame,
-    // key1.position, key2.position);
-
-    // add more interpoliation types/channels here...
-    // key1.obj->position = ease(frame, key1.frame, key2.frame,
-    // // key1.position, key2.position);
-    // cout << "rotunda movement: " << key1.configRotations.rotunda << " "
-    //      << key2.configRotations.rotunda << endl;
-    // cout << "shoulder movement: " << key1.configRotations.shoulder << " " <<
-    // key2.configRotations.shoulder << endl; cout << "elbow movement: " <<
-    // key1.configRotations.elbow << " " << key2.configRotations.elbow << endl;
-    // cout << "frame : " << key1.frame << " " << key2.frame << endl;
     j1->rotation =
         easeInterp(frame, key1.frame, key2.frame, key1.configRotations.rotunda,
                    key2.configRotations.rotunda);
@@ -147,10 +127,11 @@ void ofApp::draw() {
   drawAxis();
   ofEnableLighting();
 
+  //  User point
   ofDrawSphere(WORLDPOINT, 0.2);
   
+  //  Text for displaying solutions on the screen
   ofSetColor(ofColor::white);
-//  ofDrawBitmapString("Simple Text", -5, 10);
   ofPushMatrix(); // Save the current transformation state
   ofScale(0.07, 0.07);
   font.drawString("Displaying", -70, 160);
@@ -174,10 +155,12 @@ void ofApp::draw() {
   ofDisableLighting();
   theCam->end();
 
+  
+  //  Joint GUI
   ofDisableDepthTest();
   if (objSelected() && dynamic_cast<Joint *>(selected[0]) != nullptr) {
     Joint *selectedJoint = dynamic_cast<Joint *>(selected[0]);
-    //
+    
     auto rotationValue = selected[0]->rotation;
     jointName = "Joint Name: " + selectedJoint->name;
     jointX = "Rotation X: " + std::to_string(rotationValue.x);
