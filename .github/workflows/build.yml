@@ -1,0 +1,96 @@
+name: 🚀 CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglfw3-dev libglm-dev libglew-dev libfreetype6-dev libboost-filesystem-dev libboost-system-dev
+      
+      - name: Set up OpenFrameworks
+        run: |
+          git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
+          cd ~/openFrameworks/scripts/linux
+          ./install_dependencies.sh
+          ./compileOF.sh
+  
+      - name: Build project
+        run: |
+          cd ~/openFrameworks/apps/myApps/
+          ln -s $GITHUB_WORKSPACE ik-solver  # Link the GitHub workspace to OpenFrameworks
+          cd ik-solver
+          make
+
+  build_mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install glfw glm glew freetype boost
+    
+      - name: Set up OpenFrameworks
+        run: |
+          git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
+          cd ~/openFrameworks/scripts/osx 
+          ./install_dependencies.sh
+          ./compileOF.sh
+
+      - name: Build project
+        run: |
+          cd ~/openFrameworks/apps/myApps/
+          ln -s $GITHUB_WORKSPACE ik-solver  # Link GitHub workspace to OpenFrameworks
+          cd ik-solver
+          make
+
+  build_windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2 and MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-glfw
+            mingw-w64-x86_64-glew
+            mingw-w64-x86_64-freetype
+            mingw-w64-x86_64-boost
+
+      - name: Set up OpenFrameworks
+        shell: msys2 {0}
+        run: |
+          git clone --depth=1 https://github.com/openframeworks/openFrameworks.git ~/openFrameworks
+          cd ~/openFrameworks/scripts/msys2
+          ./install_dependencies.sh
+          ./compileOF.sh
+
+      - name: Build project
+        shell: msys2 {0}
+        run: |
+          cd ~/openFrameworks/apps/myApps/
+          ln -s $GITHUB_WORKSPACE ik-solver  # Link GitHub workspace to OpenFrameworks
+          cd ik-solver
+          make
