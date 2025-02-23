@@ -65,10 +65,10 @@ public:
   void inverseKin3(glm::vec3 target,
                    Joint& joint1,
                    Joint& joint2,
-                   Joint& joint3,
-                   vector<jointDegrees3R>& solutions);
+                   Joint& joint3);
   void handleSolutions(vector<jointDegrees3R>& solutions);
 
+private:
   // Lights
   //
   ofLight light1;
@@ -77,9 +77,6 @@ public:
   // Cameras
   //
   ofEasyCam mainCam;
-  ofCamera sideCam;
-  ofCamera topCam;
-  ofCamera* theCam;  // set to current camera either mainCam or sideCam
 
   // Materials
   //

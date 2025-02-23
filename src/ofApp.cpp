@@ -33,17 +33,11 @@ void ofApp::setup()
   mainCam.setDistance(15);
   mainCam.setNearClip(.1);
 
-  sideCam.setPosition(40, 0, 0);
-  sideCam.lookAt(glm::vec3(0, 0, 0));
-  topCam.setNearClip(.1);
-  topCam.setPosition(0, 16, 0);
-  topCam.lookAt(glm::vec3(0, 0, 0));
   ofSetSmoothLighting(true);
   ofSetFrameRate(24);
-  theCam = &mainCam;
 
   font.load("fonts/ArgakaFashion-Regular.otf", 24);
-  displaySolution = -1;  // TODO maybe move to h
+  displaySolution = -1;
 
   // lighting setup
   light1.enable();
@@ -79,13 +73,14 @@ void ofApp::setup()
   j1->addChild(j2);
   j2->addChild(j3);
   j3->addChild(j4);
-  j1->addModel("arm-assets/shoulder.obj", glm::vec3(0, 2, 0));
-  j2->addModel("arm-assets/elbow.obj", glm::vec3(0, 0, 0));
-
+  
   j1->setPosition(glm::vec3(0, 0, 0));
   j2->setPosition(glm::vec3(4, 0, 0));
   j3->setPosition(glm::vec3(8, 0, 0));
   j4->setPosition(glm::vec3(2, 0, 0));
+  
+  j1->addModel("arm-assets/shoulder.obj", glm::vec3(0, 2, 0));
+  j2->addModel("arm-assets/elbow.obj", glm::vec3(0, 0, 0));
   j3->addModel("arm-assets/endeffector.obj", glm::vec3(0, 3, 0), 0.004);
 
   scene.emplace_back(j1);
@@ -101,7 +96,7 @@ void ofApp::update()
 //--------------------------------------------------------------
 void ofApp::draw()
 {
-  theCam->begin();
+  mainCam.begin();
   ofDrawGrid(1);
   ofNoFill();
   drawAxis();
@@ -132,7 +127,7 @@ void ofApp::draw()
 
   material.end();
   ofDisableLighting();
-  theCam->end();
+  mainCam.end();
 
   //  Joint GUI
   ofDisableDepthTest();
@@ -440,15 +435,6 @@ void ofApp::keyPressed(int key)
     case 'z':
       bRotateZ = true;
       break;
-    case OF_KEY_F1:
-      theCam = &mainCam;
-      break;
-    case OF_KEY_F2:
-      theCam = &sideCam;
-      break;
-    case OF_KEY_F3:
-      theCam = &topCam;
-      break;
     case OF_KEY_ALT:
       bAltKeyDown = true;
       if (!mainCam.getMouseInputEnabled())
@@ -513,8 +499,8 @@ void ofApp::mouseDragged(int x, int y, int button)
 //
 bool ofApp::mouseToDragPlane(int x, int y, glm::vec3& point)
 {
-  glm::vec3 p = theCam->screenToWorld(glm::vec3(x, y, 0));
-  glm::vec3 d = p - theCam->getPosition();
+  glm::vec3 p = mainCam.screenToWorld(glm::vec3(x, y, 0));
+  glm::vec3 d = p - mainCam.getPosition();
   glm::vec3 dn = glm::normalize(d);
 
   float dist;
@@ -524,7 +510,7 @@ bool ofApp::mouseToDragPlane(int x, int y, glm::vec3& point)
   } else
     pos = glm::vec3(0, 0, 0);
   if (glm::intersectRayPlane(
-        p, dn, pos, glm::normalize(theCam->getZAxis()), dist)) {
+        p, dn, pos, glm::normalize(mainCam.getZAxis()), dist)) {
     point = p + dn * dist;
     return true;
   }
@@ -548,8 +534,8 @@ void ofApp::mousePressed(int x, int y, int button)
     // list of intersected objects
     std::vector<std::shared_ptr<SceneObject>> hits;
 
-    glm::vec3 p = theCam->screenToWorld(glm::vec3(x, y, 0));
-    glm::vec3 d = p - theCam->getPosition();
+    glm::vec3 p = mainCam.screenToWorld(glm::vec3(x, y, 0));
+    glm::vec3 d = p - mainCam.getPosition();
     glm::vec3 dn = glm::normalize(d);
 
     // check for selection of scene objects
@@ -577,7 +563,7 @@ void ofApp::mousePressed(int x, int y, int button)
         WORLDPOINT = worldPoint;
         solutions.clear();
 
-        inverseKin3(worldPoint, *j1, *j2, *j3, solutions);
+        inverseKin3(worldPoint, *j1, *j2, *j3);
 
         // animation
         keyFrameManager.setFirstFrame();
@@ -592,7 +578,7 @@ void ofApp::mousePressed(int x, int y, int button)
         float nearestDist = std::numeric_limits<float>::infinity();
 
         for (const auto& obj : hits) {
-            float dist = glm::length(obj->position - theCam->getPosition());
+            float dist = glm::length(obj->position - mainCam.getPosition());
             if (dist < nearestDist) {
                 nearestDist = dist;
                 selectedObj = obj;
@@ -737,8 +723,7 @@ void ofApp::inverseKin2(glm::vec2 target,
 void ofApp::inverseKin3(glm::vec3 target,
                         Joint& joint1,
                         Joint& joint2,
-                        Joint& joint3,
-                        vector<jointDegrees3R>& solutions)
+                        Joint& joint3)
 {
   // calculate shoulder and elbow rotation about the z plane
   double shoulderOffset = 0;  // l1 is offset from rotunda to shoulder

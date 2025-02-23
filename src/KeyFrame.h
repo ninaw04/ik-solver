@@ -12,9 +12,8 @@ struct jointDegrees3R
     glm::vec3 elbow;
 };
 
-class KeyFrame
+struct KeyFrame
 {
-public:
     int frame = -1;  // -1 => no key is set;
     jointDegrees3R configRotations;
 };
@@ -45,8 +44,6 @@ public:
     glm::vec3 mapVec(glm::vec3 const& val, glm::vec3 const& start, glm::vec3 const& end, glm::vec3 const& outStart, glm::vec3 const& outEnd);
     void setKeyFrame(int index, std::vector<jointDegrees3R>& solutions, int& displaySolution);
     void resetKeyFrames();
-
-    
 };
 
 #endif

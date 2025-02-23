@@ -10,7 +10,7 @@
  *      Amy Williams, Steve Barrus, R. Keith Morley, and Peter Shirley
  *      "An Efficient and Robust Ray-Box Intersection Algorithm"
  *      Journal of graphics tools, 10(1):49-54, 2005
- * 
+ *
  */
 
 class _Ray {
